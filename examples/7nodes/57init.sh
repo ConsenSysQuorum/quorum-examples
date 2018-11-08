@@ -19,9 +19,10 @@ cp keys/key$node qdata/dd$node/keystore
 cp raft/nodekey$node qdata/dd$node/geth/nodekey
 geth --datadir qdata/dd$node init genesis.json
 
-let x=$node-1
-for (( i=1; i<=$x; i++ ))
-do
-	DDIR="qdata/dd$i"
-	cp "perm$node.json" "$DDIR/permissioned-nodes.json"
-done
+#let x=$node-1
+#for (( i=1; i<=$x; i++ ))
+#do
+#	DDIR="qdata/dd$i"
+#	cp "perm$node.json" "$DDIR/permissioned-nodes.json"
+#done
+./tessera-init57.sh $node
