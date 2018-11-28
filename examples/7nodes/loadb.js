@@ -1,0 +1,5 @@
+a = eth.accounts[0]
+web3.eth.defaultAccount = a;
+var abi = [{"constant":false,"inputs":[{"name":"x","type":"uint256"}],"name":"setc","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"b","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getc","outputs":[{"name":"retVal","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getb","outputs":[{"name":"retVal","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"x","type":"uint256"}],"name":"setb","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[{"name":"initVal","type":"uint256"},{"name":"_addrc","type":"address"}],"payable":false,"stateMutability":"nonpayable","type":"constructor"}];
+
+var b = web3.eth.contract(abi).at("0xd9d64b7dc034fafdba5dc2902875a67b5d586420");
