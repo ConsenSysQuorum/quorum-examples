@@ -80,8 +80,8 @@ let i=$node-1
 
 echo "[*] Starting Ethereum nodes with ChainID and NetworkId of $NETWORK_ID"
 set -v
-#ARGS="--networkid $NETWORK_ID --raft --rpc --rpcaddr 0.0.0.0 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum --emitcheckpoints"
-ARGS="--networkid $NETWORK_ID --permissioned --raft --rpc --rpcaddr 0.0.0.0 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum --emitcheckpoints"
+#ARGS="--networkid $NETWORK_ID --raft --rpc --rpcaddr 0.0.0.0 --rpcapi quorumAcctMgmt,quorumNodeMgmt,quorumOrgMgmt,admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum --emitcheckpoints"
+ARGS="--networkid $NETWORK_ID --permissioned --raft --rpc --rpcaddr 0.0.0.0 --rpcapi quorumAcctMgmt,quorumNodeMgmt,quorumOrgMgmt,admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum --emitcheckpoints"
 echo "Starting node $node"
 PRIVATE_CONFIG=qdata/c$node/tm.ipc nohup geth --datadir qdata/dd$node $ARGS --raftport 5040$node --raftjoinexisting $raftid --rpcport 2200$i --port 2100$i --unlock 0 --password passwords.txt 2>>qdata/logs/$node.log &
 set +v

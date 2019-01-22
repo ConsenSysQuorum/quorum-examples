@@ -9,7 +9,7 @@ var bytecode = "0x6060604052341561000f57600080fd5b604051602080610149833981016040
 
 var simpleContract = web3.eth.contract(abi);
 //var simple = simpleContract.new(42, {from:web3.eth.accounts[0], data: bytecode, gas: 0x47b760, privateFor: ["QfeDAys9MPDs2XHExtc84jKGHxZg/aj52DTh0vtA3Xc=", "1iTZde/ndBHvzhcl7V68x44Vx7pl8nwx9LqnM/AfJUg="]}, function(e, contract) {
-var simple = simpleContract.new(42, {from:web3.eth.accounts[0], data: bytecode, gas: 0x47b760, privateFor: ["JPMORGAN" ]}, function(e, contract) {
+var simple = simpleContract.new(42, {from:web3.eth.accounts[0], data: bytecode, gas: 0x47b760, privateFor: ["ENTITY1", "ENTITY3"]}, function(e, contract) {
 	if (e) {
 		console.log("err creating contract", e);
 	} else {
