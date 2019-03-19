@@ -61,3 +61,7 @@ geth --datadir qdata/dd4 init istanbul-genesis.json
 #cp keys/key7 qdata/dd7/keystore
 #cp raft/nodekey7 qdata/dd7/geth/nodekey
 #geth --datadir qdata/dd7 init istanbul-genesis.json
+
+
+#Initialise Tessera configuration
+./tessera-init.sh

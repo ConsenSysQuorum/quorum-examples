@@ -2,7 +2,49 @@
 set -u
 set -e
 
-node=$1
+function usage() {
+    echo ""
+    echo "Usage:"
+    echo "    $0 [tessera | constellation] [--tesseraOptions \"options for Tessera start script\"]"
+    echo ""
+    echo "Where:"
+    echo "    tessera | constellation (default = constellation): specifies which privacy implementation to use"
+    echo "    --tesseraOptions: allows additional options as documented in tessera-start.sh usage which is shown below:"
+    echo ""
+    ./tessera-start.sh --help
+    exit -1
+}
+
+privacyImpl=tessera
+tesseraOptions=
+while (( "$#" )); do
+    case "$1" in
+        tessera)
+            privacyImpl=tessera
+            shift
+            ;;
+        constellation)
+            privacyImpl=constellation
+            shift
+            ;;
+        --tesseraOptions)
+            tesseraOptions=$2
+            shift 2
+            ;;
+        --node)
+            node=$2
+            shift 2
+            ;;
+        --help)
+            shift
+            usage
+            ;;
+        *)
+            echo "Error: Unsupported command line parameter $1"
+            usage
+            ;;
+    esac
+done
 
 NETWORK_ID=$(cat istanbul-genesis.json | grep chainId | awk -F " " '{print $2}' | awk -F "," '{print $1}')
 
@@ -14,14 +56,24 @@ then
 fi
 
 mkdir -p qdata/logs
-echo "[*] Starting Constellation nodes"
-./57const.sh $node
+
+if [ "$privacyImpl" == "tessera" ]; then
+    echo "[*] Starting Tessera nodes"
+    ./tessera-start57.sh ${tesseraOptions} --nodelow $node --nodehigh $node
+elif [ "$privacyImpl" == "constellation" ]; then
+    echo "[*] Starting Constellation nodes"
+    ./constellation-start.sh
+else
+    echo "Unsupported privacy implementation: ${privacyImpl}"
+    usage
+fi
 
 let i=$node-1
 
 echo "[*] Starting Ethereum nodes with ChainID and NetworkId of $NETWORK_ID"
 set -v
-ARGS="--gcmode full --permissioned --istanbul.blockperiod 2 --networkid $NETWORK_ID --syncmode full --mine --minerthreads 1 --rpc --rpcaddr 0.0.0.0 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,istanbul"
+ARGS="--gcmode full --permissioned --istanbul.blockperiod 1 --networkid $NETWORK_ID --syncmode full --mine --minerthreads 1 --rpc --rpcaddr 0.0.0.0 --rpcapi quorumAcctMgmt,quorumNodeMgmt,quorumOrgMgmt,admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,istanbul"
+#ARGS="--gcmode full --istanbul.blockperiod 1 --networkid $NETWORK_ID --syncmode full --mine --minerthreads 1 --rpc --rpcaddr 0.0.0.0 --rpcapi quorumAcctMgmt,quorumNodeMgmt,quorumOrgMgmt,admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,istanbul"
 echo "Starting node $node"
 PRIVATE_CONFIG=qdata/c$node/tm.ipc nohup geth --datadir qdata/dd$node $ARGS --rpcport 2200$i --port 2100$i --unlock 0 --password passwords.txt 2>>qdata/logs/$node.log &
 set +v
