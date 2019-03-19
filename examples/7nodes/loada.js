@@ -1,7 +1,0 @@
-a = eth.accounts[0]
-web3.eth.defaultAccount = a;
-
-var abi = [{"constant":true,"inputs":[],"name":"a","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"x","type":"uint256"}],"name":"setc","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"x","type":"uint256"}],"name":"seta","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"geta","outputs":[{"name":"retVal","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getc","outputs":[{"name":"retVal","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getb","outputs":[{"name":"retVal","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"x","type":"uint256"}],"name":"setb","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[{"name":"initVal","type":"uint256"},{"name":"_addrb","type":"address"}],"payable":false,"stateMutability":"nonpayable","type":"constructor"}];
-
-// var a = web3.eth.contract(abi).at("0xfe0602d820f42800e3ef3f89e1c39cd15f78d283"); -- private
-var a = web3.eth.contract(abi).at("0x064f860b6683223b03b38252853d5d2c210cce19");

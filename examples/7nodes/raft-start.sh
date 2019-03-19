@@ -67,7 +67,7 @@ fi
 echo "[*] Starting Ethereum nodes with ChainID and NetworkId of $NETWORK_ID"
 set -v
 #ARGS="--permissioned --networkid $NETWORK_ID --raft --rpc --rpcaddr 0.0.0.0 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum --emitcheckpoints"
-ARGS="--gcmode archive --permissioned --networkid $NETWORK_ID --raft --rpc --rpcaddr 0.0.0.0 --rpcapi quorumAcctMgmt,quorumNodeMgmt,quorumOrgMgmt,admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum --emitcheckpoints"
+ARGS="--verbosity 5 --gcmode archive --permissioned --networkid $NETWORK_ID --raft --rpc --rpcaddr 0.0.0.0 --rpcapi quorumAcctMgmt,quorumNodeMgmt,quorumOrgMgmt,admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum --emitcheckpoints"
 #ARGS="--gcmode archive --networkid $NETWORK_ID --raft --rpc --rpcaddr 0.0.0.0 --rpcapi quorumAcctMgmt,quorumNodeMgmt,quorumOrgMgmt,admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum --emitcheckpoints"
 PRIVATE_CONFIG=qdata/c1/tm.ipc nohup geth --datadir qdata/dd1 $ARGS --raftport 50401 --rpcport 22000 --port 21000 --unlock 0 --password passwords.txt 2>>qdata/logs/1.log &
 sleep 1
