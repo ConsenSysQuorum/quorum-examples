@@ -1,0 +1,24 @@
+Istanbul test
+Node 5 
+validators
+{
+	"Address": "0x12bc760eabb67dd715718d0ded3ec7b5b1eff3c9",
+	"Nodekey": "e7c888150587c443ce6616e3252bef15bba3a8a2733fb640e94d91a780edafe0",
+	"NodeInfo": "enode://cc6b4faf4a1f245903c9ba6ef3032b20ec6e552ed765becf407621260a7214bc96cb92d260a2a0baf98e8df14d43a5a2efbb3dfa07bf60399594502b910f7a38@0.0.0.0:30303?discport=0"
+}
+
+Node 6
+validators
+{
+	"Address": "0xb3de548c47644bc46be942efeea3fecdbdcb2cb9",
+	"Nodekey": "8eda4e663d63ab1fcc96c5788b4d46cddac8655b3793917371a7f72ae64ac266",
+	"NodeInfo": "enode://1abef086386150ce617702af935a93b45428b86f1d509a3802ccadd0cbb351cc4df8fe983afd88cb274c36e00b2a7755c175d6088de91d2e0e7d8d3a380ad787@0.0.0.0:30303?discport=0"
+}
+
+Node 7
+validators
+{
+	"Address": "0x38c4e64f478df30376cf35248a35c60a29e3cd92",
+	"Nodekey": "20a0ecfd65a7260e5467cf1fa644d3e15f737839677c310b6e7adeb2ce736052",
+	"NodeInfo": "enode://eac53b704b90114b3330f8daa6ef372486aa1a1a0473acf88e95a55c02330d186e9cddaa27b6cbdebcc1f6b6ff040349df78d200a4efb525f7279d488cd10d80@0.0.0.0:30303?discport=0"
+}
