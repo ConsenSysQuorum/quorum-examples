@@ -22,8 +22,6 @@ contract OrgManager {
     event OrgSuspended(string _orgId);
     event OrgSuspensionRevoked(string _orgId);
 
-    event Dummy(string _msg);
-
     modifier onlyImpl
     {
         require(msg.sender == permUpgradable.getPermImpl());
@@ -51,12 +49,22 @@ contract OrgManager {
     function addAdminOrg(string calldata _orgId) external
     onlyImpl
     {
+        addNewOrg(_orgId, 2);
+        emit OrgApproved(_orgId);
+    }
+
+    function addNewOrg(string memory _orgId, uint _status) internal
+    {
         orgNum++;
         OrgIndex[keccak256(abi.encodePacked(_orgId))] = orgNum;
         uint id = orgList.length++;
         orgList[id].orgId = _orgId;
-        orgList[id].status = 2;
-        emit OrgApproved(_orgId);
+        orgList[id].status = _status;
+    }
+
+    function getNumberOfOrgs() public view returns (uint)
+    {
+        return orgList.length;
     }
 
     // Org related functions
@@ -76,24 +84,34 @@ contract OrgManager {
     onlyImpl
     orgNotExists(_orgId)
     {
-        orgNum++;
-        OrgIndex[keccak256(abi.encodePacked(_orgId))] = orgNum;
-        uint id = orgList.length++;
-        orgList[id].orgId = _orgId;
-        orgList[id].status = 1;
+        addNewOrg(_orgId, 1);
         emit OrgPendingApproval(_orgId, 1);
     }
 
     function updateOrg(string calldata _orgId, uint _status) external
     onlyImpl
     orgExists(_orgId)
+    returns (uint)
     {
+        require ((_status == 3 || _status == 5), "Operation not allowed");
+        uint reqStatus;
+        uint pendingOp;
+        if (_status == 3) {
+            reqStatus = 2;
+            pendingOp = 2;
+        }
+        else if (_status == 5) {
+            reqStatus = 4;
+            pendingOp = 3;
+        }
+        require(checkOrgStatus(_orgId, reqStatus) == true, "Operation not allowed");
         if (_status == 3) {
             suspendOrg(_orgId);
         }
         else {
             revokeOrgSuspension(_orgId);
         }
+        return pendingOp;
     }
 
     function approveOrgStatusUpdate(string calldata _orgId, uint _status) external
@@ -137,7 +155,6 @@ contract OrgManager {
     }
 
     function approveOrgSuspension(string memory _orgId) internal
-
     {
         require(checkOrgStatus(_orgId, 3) == true, "Nothing to approve");
         uint id = getOrgIndex(_orgId);

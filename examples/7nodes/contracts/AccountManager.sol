@@ -22,8 +22,8 @@ contract AccountManager {
     mapping(bytes32 => bool) private orgAdminIndex;
 
     // account permission events
-    event AccountAccessModified(address _address, string _roleId);
-    event AccountAccessRevoked(address _address, string _roleId);
+    event AccountAccessModified(address _address, string _orgId, string _roleId, bool _orgAdmin, uint _status);
+    event AccountAccessRevoked(address _address, string _orgId, string _roleId, bool _orgAdmin);
 
     modifier onlyImpl
     {
@@ -61,6 +61,11 @@ contract AccountManager {
         return (acctAccessList[aIndex].acctId, acctAccessList[aIndex].orgId, acctAccessList[aIndex].role, acctAccessList[aIndex].status, acctAccessList[aIndex].orgAdmin);
     }
 
+    function getAccountDetailsFromIndex(uint aIndex) external view returns (address, string memory, string memory, uint, bool)
+    {
+        return (acctAccessList[aIndex].acctId, acctAccessList[aIndex].orgId, acctAccessList[aIndex].role, acctAccessList[aIndex].status, acctAccessList[aIndex].orgAdmin);
+    }
+
     // Get number of accounts
     function getNumberOfAccounts() external view returns (uint)
     {
@@ -90,7 +95,7 @@ contract AccountManager {
         if (_oAdmin) {
             orgAdminIndex[keccak256(abi.encodePacked(_orgId))] = true;
         }
-        emit AccountAccessModified(_address, _roleId);
+        emit AccountAccessModified(_address, _orgId, _roleId, _oAdmin, _status);
     }
 
     function addNWAdminAccount(address _address, string calldata _orgId) external
@@ -127,7 +132,7 @@ contract AccountManager {
             (status == 1)) {
             uint aIndex = getAcctIndex(_address);
             acctAccessList[aIndex].status = 2;
-            emit AccountAccessModified(_address, acctAccessList[aIndex].role);
+            emit AccountAccessModified(_address, acctAccessList[aIndex].orgId, acctAccessList[aIndex].role, acctAccessList[aIndex].orgAdmin, acctAccessList[aIndex].status);
         }
 
     }
@@ -138,7 +143,7 @@ contract AccountManager {
         uint aIndex = getAcctIndex(_address);
         if (accountIndex[_address] != 0) {
             acctAccessList[aIndex].status = 3;
-            emit AccountAccessRevoked(_address, acctAccessList[aIndex].role);
+            emit AccountAccessRevoked(_address, acctAccessList[aIndex].orgId, acctAccessList[aIndex].role, acctAccessList[aIndex].orgAdmin);
         }
     }
 

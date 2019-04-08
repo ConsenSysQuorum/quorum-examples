@@ -9,8 +9,6 @@ contract PermissionsInterface {
     PermissionsUpgradable private permUpgradable;
     address private permImplUpgradeable;
 
-    event Dummy(string _msg);
-
     constructor(address _permImplUpgradeable) public {
         permImplUpgradeable = _permImplUpgradeable;
     }
@@ -75,15 +73,15 @@ contract PermissionsInterface {
         permImplementation.approveOrg(_orgId, _enodeId, msg.sender);
     }
 
-//    function updateOrgStatus(string calldata _orgId, uint _status) external
-//    {
-//        permImplementation.updateOrgStatus(_orgId, _status);
-//    }
-//
-//    function approveOrgStatus(string calldata _orgId, uint _status) external
-//    {
-//        permImplementation.approveOrgStatus(_orgId, _status);
-//    }
+    function updateOrgStatus(string calldata _orgId, uint _status) external
+    {
+        permImplementation.updateOrgStatus(_orgId, _status, msg.sender);
+    }
+
+    function approveOrgStatus(string calldata _orgId, uint _status) external
+    {
+        permImplementation.approveOrgStatus(_orgId, _status, msg.sender);
+    }
     // returns org and master org details based on org index
     function getOrgInfo(uint _orgIndex) external view returns (string memory, uint)
     {
@@ -93,12 +91,12 @@ contract PermissionsInterface {
     // Role related functions
     function addNewRole(string calldata _roleId, string calldata _orgId, uint _access, bool _voter) external
     {
-        permImplementation.addNewRole(_roleId, _orgId, _access, _voter);
+        permImplementation.addNewRole(_roleId, _orgId, _access, _voter, msg.sender);
     }
 
     function removeRole(string calldata _roleId, string calldata _orgId) external
     {
-        permImplementation.removeRole(_roleId, _orgId);
+        permImplementation.removeRole(_roleId, _orgId, msg.sender);
     }
 
     function getRoleDetails(string calldata _roleId, string calldata _orgId) external view returns (string memory, string memory, uint, bool, bool)
@@ -112,10 +110,12 @@ contract PermissionsInterface {
         return permImplementation.getNumberOfVoters(_orgId);
     }
 
+
     function checkIfVoterExists(string calldata _orgId, address _acct) external view returns (bool)
     {
         return permImplementation.checkIfVoterExists(_orgId, _acct);
     }
+
 
     function getVoteCount(string calldata _orgId) external view returns (uint, uint)
     {
@@ -141,14 +141,19 @@ contract PermissionsInterface {
 
     function assignAccountRole(address _acct, string memory _orgId, string memory _roleId) public
     {
-        permImplementation.assignAccountRole(_acct, _orgId, _roleId);
+        permImplementation.assignAccountRole(_acct, _orgId, _roleId, msg.sender);
 
     }
 
     function addNode(string calldata _orgId, string calldata _enodeId) external
     {
-        permImplementation.addNode(_orgId, _enodeId);
+        permImplementation.addNode(_orgId, _enodeId, msg.sender);
 
+    }
+
+    function updateNodeStatus(string calldata _orgId, string calldata _enodeId, uint _status) external
+    {
+        permImplementation.updateNodeStatus(_orgId, _enodeId, _status, msg.sender);
     }
 
     function getNodeStatus(string memory _enodeId) public view returns (uint)

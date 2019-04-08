@@ -5,7 +5,7 @@ import "./PermissionsUpgradable.sol";
 contract NodeManager {
     PermissionsUpgradable private permUpgradable;
     // enum and struct declaration
-    // changing node status to integer (0-NotInList, 1- PendingApproval, 2-Approved,
+    // changing node status to integer (0-NotInList, 1- PendingApproval, 2-Approved, 3-Deactivated, 4-Blacklisted)
     //      PendingDeactivation, Deactivated, PendingActivation, PendingBlacklisting, Blacklisted)
 //    enum NodeStatus {NotInList, PendingApproval, Approved, PendingDeactivation, Deactivated, PendingActivation, PendingBlacklisting, Blacklisted}
     struct NodeDetails {
@@ -23,20 +23,17 @@ contract NodeManager {
 
 
     // node permission events for new node propose
-    event NodeProposed(string _enodeId);
-    event NodeApproved(string _enodeId);
+    event NodeProposed(string _enodeId, string _orgId);
+    event NodeApproved(string _enodeId, string _orgId);
 
-    // node permission events for node decativation
-    event NodePendingDeactivation (string _enodeId);
-    event NodeDeactivated(string _enodeId);
+    // node permission events for node deactivation
+    event NodeDeactivated(string _enodeId, string _orgId);
 
     // node permission events for node activation
-    event NodePendingActivation(string _enodeId);
-    event NodeActivated(string _enodeId);
+    event NodeActivated(string _enodeId, string _orgId);
 
     // node permission events for node blacklist
-    event NodePendingBlacklist(string _enodeId);
-    event NodeBlacklisted(string);
+    event NodeBlacklisted(string _enodeId, string _orgId);
 
     modifier onlyImpl
     {
@@ -63,15 +60,15 @@ contract NodeManager {
     }
 
     // Get node details given enode Id
-    function getNodeDetails(string memory enodeId) public view returns (string memory _enodeId, uint _nodeStatus)
+    function getNodeDetails(string memory enodeId) public view returns (string memory _orgId, string memory _enodeId, uint _nodeStatus)
     {
         uint nodeIndex = getNodeIndex(enodeId);
-        return (nodeList[nodeIndex].enodeId, nodeList[nodeIndex].status);
+        return (nodeList[nodeIndex].orgId, nodeList[nodeIndex].enodeId, nodeList[nodeIndex].status);
     }
     // Get node details given index
-    function getNodeDetailsFromIndex(uint nodeIndex) public view returns (string memory _enodeId, uint _nodeStatus)
+    function getNodeDetailsFromIndex(uint nodeIndex) public view returns (string memory _orgId, string memory _enodeId, uint _nodeStatus)
     {
-        return (nodeList[nodeIndex].enodeId, nodeList[nodeIndex].status);
+        return (nodeList[nodeIndex].orgId, nodeList[nodeIndex].enodeId, nodeList[nodeIndex].status);
     }
     // Get number of nodes
     function getNumberOfNodes() public view returns (uint)
@@ -88,14 +85,22 @@ contract NodeManager {
         return nodeList[getNodeIndex(_enodeId)].status;
     }
 
-    function addNode(string calldata _enodeId, string calldata _orgId) external
+    function addAdminNode(string calldata _enodeId, string calldata _orgId) external
+    onlyImpl
+    enodeNotInList(_enodeId)
+    {
+        numberOfNodes++;
+        nodeIdToIndex[keccak256(abi.encodePacked(_enodeId))] = numberOfNodes;
+        nodeList.push(NodeDetails(_enodeId, _orgId, 2));
+    }
+    function addNode(string memory _enodeId, string memory _orgId) public
     onlyImpl
     enodeNotInList(_enodeId)
     {
         numberOfNodes++;
         nodeIdToIndex[keccak256(abi.encodePacked(_enodeId))] = numberOfNodes;
         nodeList.push(NodeDetails(_enodeId, _orgId,  1));
-        emit NodeProposed(_enodeId);
+        emit NodeProposed(_enodeId, _orgId);
     }
 
     function addOrgNode(string calldata _enodeId, string calldata _orgId) external
@@ -105,112 +110,60 @@ contract NodeManager {
         numberOfNodes++;
         nodeIdToIndex[keccak256(abi.encodePacked(_enodeId))] = numberOfNodes;
         nodeList.push(NodeDetails(_enodeId, _orgId,  2));
-        emit NodeApproved(_enodeId);
+        emit NodeApproved(_enodeId, _orgId);
     }
 
     // Adds a node to the nodeList mapping and emits node added event if successfully and node exists event of node is already present
-    function approveNode(string calldata _enodeId) external
+    function approveNode(string memory _enodeId, string memory _orgId) public
     onlyImpl
+    enodeInList(_enodeId)
     {
+        // node should belong to the passed org
+        require(checkOrg(_enodeId, _orgId), "Node does not belong to the org");
         require(getNodeStatus(_enodeId) == 1, "Node need to be in PendingApproval status");
         uint nodeIndex = getNodeIndex(_enodeId);
         // vote node
         nodeList[nodeIndex].status = 2;
-        emit NodeApproved(nodeList[nodeIndex].enodeId);
+        emit NodeApproved(nodeList[nodeIndex].enodeId, nodeList[nodeIndex].orgId);
     }
 
-//    // Propose a node for deactivation from network
-//    function proposeDeactivation(string calldata _enodeId) external enodeInList(_enodeId)
-//    {
-//        require(getNodeStatus(_enodeId) == NodeStatus.Approved, "Node need to be in Approved status");
-//        uint nodeIndex = getNodeIndex(_enodeId);
-//        nodeList[nodeIndex].status = NodeStatus.PendingDeactivation;
-//        emit NodePendingDeactivation(_enodeId);
-//
-//    }
-//
-//    //deactivates a given Enode and emits the decativation event
-//    function deactivateNode(string calldata _enodeId) external
-//    {
-//        require(getNodeStatus(_enodeId) == NodeStatus.PendingDeactivation, "Node need to be in PendingDeactivation status");
-//        uint nodeIndex = getNodeIndex(_enodeId);
-//        nodeList[nodeIndex].status = NodeStatus.Deactivated;
-//        emit NodeDeactivated(nodeList[nodeIndex].enodeId);
-//
-//    }
-//
-//    // Propose node for blacklisting
-//    function proposeNodeActivation(string calldata _enodeId) external
-//    {
-//        require(getNodeStatus(_enodeId) == NodeStatus.Deactivated, "Node need to be in Deactivated status");
-//        uint nodeIndex = getNodeIndex(_enodeId);
-//        nodeList[nodeIndex].status = NodeStatus.PendingActivation;
-//        // emit event
-//        emit NodePendingActivation(_enodeId);
-//    }
+    function updateNodeStatus(string calldata _enodeId, string calldata _orgId, uint _status) external
+    onlyImpl
+    enodeInList(_enodeId)
+    {
+        // node should belong to the org
+        require(checkOrg(_enodeId, _orgId), "Node does not belong to the org");
+        // changing node status to integer (0-NotInList, 1- PendingApproval, 2-Approved, 3-Deactivated, 4-Blacklisted)
+        // operations that can be done 3-Deactivate Node, 4-ActivateNode, 5-Blacklist nodeList
+        require((_status == 3 || _status == 4 || _status == 5), "invalid operation");
 
-//    //deactivates a given Enode and emits the decativation event
-//    function activateNode(string calldata _enodeId) external
-//    {
-//        require(getNodeStatus(_enodeId) == NodeStatus.PendingActivation, "Node need to be in PendingActivation status");
-//        uint nodeIndex = getNodeIndex(_enodeId);
-//        require(voteStatus[nodeIndex][msg.sender] == false, "Node can not double vote");
-//        // vote node
-//        updateVoteStatus(nodeIndex);
-//        // emit event
-//        // check if node vote reach majority
-//        if (checkEnoughVotes(nodeIndex)) {
-//            nodeList[nodeIndex].status = NodeStatus.Approved;
-//            emit NodeActivated(nodeList[nodeIndex].enodeId, nodeList[nodeIndex].ipAddrPort, nodeList[nodeIndex].discPort, nodeList[nodeIndex].raftPort);
-//        }
-//    }
-//
-//    // Propose node for blacklisting
-//    function proposeNodeBlacklisting(string calldata _enodeId, string calldata _ipAddrPort, string calldata _discPort, string calldata _raftPort) external
-//    {
-//        if (checkVotingAccountExist()) {
-//            uint nodeIndex = getNodeIndex(_enodeId);
-//            // check if node is in the nodeList
-//            if (nodeIdToIndex[keccak256(abi.encodePacked(_enodeId))] != 0) {
-//                // no matter what status the node is in, vote will reset and node status change to PendingBlacklisting
-//                nodeList[nodeIndex].status = NodeStatus.PendingBlacklisting;
-//                nodeIndex = getNodeIndex(_enodeId);
-//            } else {
-//                // increment node number, add node to the list
-//                numberOfNodes++;
-//                nodeIdToIndex[keccak256(abi.encodePacked(_enodeId))] = numberOfNodes;
-//                nodeList.push(NodeDetails(_enodeId, _ipAddrPort, _discPort, _raftPort, NodeStatus.PendingBlacklisting));
-//                nodeIndex = numberOfNodes;
-//            }
-//            // add voting status, numberOfNodes is the index of current proposed node
-//            initNodeVoteStatus(nodeIndex);
-//            // emit event
-//            emit NodePendingBlacklist(_enodeId);
-//        }
-//    }
-//
-//    //Approve node blacklisting
-//    function blacklistNode(string calldata _enodeId) external
-//    {
-//        require(getNodeStatus(_enodeId) == NodeStatus.PendingBlacklisting, "Node need to be in PendingBlacklisting status");
-//        uint nodeIndex = getNodeIndex(_enodeId);
-//        require(voteStatus[nodeIndex][msg.sender] == false, "Node can not double vote");
-//        // vote node
-//        voteStatus[nodeIndex][msg.sender] = true;
-//        voteCount[nodeIndex]++;
-//        // emit event
-//        // check if node vote reach majority
-//        if (checkEnoughVotes(nodeIndex)) {
-//            nodeList[nodeIndex].status = NodeStatus.Blacklisted;
-//            emit NodeBlacklisted(nodeList[nodeIndex].enodeId, nodeList[nodeIndex].ipAddrPort, nodeList[nodeIndex].discPort, nodeList[nodeIndex].raftPort);
-//        }
-//    }
+        if (_status == 3){
+            require(getNodeStatus(_enodeId) == 2, "Op cannot be performed");
+            nodeList[getNodeIndex(_enodeId)].status = 3;
+            emit NodeDeactivated(_enodeId, _orgId);
+        }
+        else if (_status == 4){
+            require(getNodeStatus(_enodeId) == 3, "Op cannot be performed");
+            nodeList[getNodeIndex(_enodeId)].status = 2;
+            emit NodeActivated(_enodeId, _orgId);
+        }
+        else {
+            nodeList[getNodeIndex(_enodeId)].status = 5;
+            emit NodeBlacklisted(_enodeId, _orgId);
+        }
+    }
 
     /* private functions */
-    function getNodeIndex(string memory _enodeId) internal view returns (uint)
+    function getNodeIndex(string memory _enodeId) internal view
+    returns (uint)
     {
         return nodeIdToIndex[keccak256(abi.encodePacked(_enodeId))] - 1;
     }
 
+    function checkOrg(string memory _enodeId, string memory _orgId) internal view
+    returns(bool)
+    {
+        return (keccak256(abi.encodePacked(nodeList[getNodeIndex(_enodeId)].orgId)) == keccak256(abi.encodePacked(_orgId)));
+    }
 
 }
