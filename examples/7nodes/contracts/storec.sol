@@ -1,4 +1,4 @@
-pragma solidity ^0.4.21;
+pragma solidity ^0.5.3;
 
 contract storec {
   uint public c;
@@ -11,7 +11,7 @@ contract storec {
     c = x;
   }
 
-  function getc() public constant returns (uint retVal) {
+  function getc() public view  returns (uint retVal) {
     return c;
   }
 }

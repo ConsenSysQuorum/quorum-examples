@@ -2,15 +2,26 @@
 set -u
 set -e
 
+mode=$1
+
 cd ..
 
 ./stop.sh
+echo $PWD
 
 # run raft-init.sh
-echo "############ Starting the network in un-permissioned mode #############"
-./raft-init.sh
-# bring up the network in un-permissioned mode
-./uraft-start.sh
+if [ "$mode"  ==  "IBFT" ]
+then
+    echo "######### starting in IBFT mode to deploy the contracts ######"
+    ./istanbul-init.sh
+    ./istanbul-start.sh
+    echo "waiting 10 secs for network to sync up"
+    sleep 120
+else
+    echo "############ Starting the network in raft mode #############"
+    ./raft-init.sh
+    ./raft-start.sh
+fi
 
 # deploy the contracts
 echo "############ Deploying permissions related contarcts #############"
@@ -38,4 +49,11 @@ echo "############ Executing permissions init #############"
 
 # bring up the network in permissioned mode
 echo "############ Starting the network in permissioned mode #############"
-./raft-start.sh
+if [ "$mode"  ==  "IBFT" ]
+then
+    echo "######### starting in IBFT mode to deploy the contracts ######"
+    ./istanbul-start.sh
+else
+    echo "############ Starting the network in raft mode #############"
+    ./raft-start.sh
+fi

@@ -34,9 +34,9 @@ contract PermissionsInterface {
         permImplementation.setPolicy(_nwAdminOrg, _nwAdminRole, _oAdminRole);
     }
 
-    function init(address _orgManager, address _rolesManager, address _acctManager, address _voterManager, address _nodeManager) external
+    function init(address _orgManager, address _rolesManager, address _acctManager, address _voterManager, address _nodeManager, uint _breadth, uint _depth) external
     {
-        permImplementation.init(_orgManager, _rolesManager, _acctManager, _voterManager, _nodeManager);
+        permImplementation.init(_orgManager, _rolesManager, _acctManager, _voterManager, _nodeManager, _breadth, _depth);
     }
 
     function addAdminNodes(string calldata _enodeId) external
@@ -63,14 +63,20 @@ contract PermissionsInterface {
     }
 
     // function for adding a new master org
-    function addOrg(string calldata _orgId, string calldata _enodeId) external
+    function addOrg(string calldata _orgId, string calldata _enodeId, address _account) external
     {
-        permImplementation.addOrg(_orgId, _enodeId, msg.sender);
+        permImplementation.addOrg(_orgId, _enodeId, _account, msg.sender);
     }
 
-    function approveOrg(string calldata _orgId, string calldata _enodeId) external
+    function approveOrg(string calldata _orgId, string calldata _enodeId, address _account) external
     {
-        permImplementation.approveOrg(_orgId, _enodeId, msg.sender);
+        permImplementation.approveOrg(_orgId, _enodeId, _account, msg.sender);
+    }
+
+    // function for adding a new master org
+    function addSubOrg(string calldata _pOrg, string calldata _orgId, string calldata _enodeId, address _account) external
+{
+        permImplementation.addSubOrg(_pOrg, _orgId, _enodeId, _account, msg.sender);
     }
 
     function updateOrgStatus(string calldata _orgId, uint _status) external
@@ -82,16 +88,11 @@ contract PermissionsInterface {
     {
         permImplementation.approveOrgStatus(_orgId, _status, msg.sender);
     }
-    // returns org and master org details based on org index
-    function getOrgInfo(uint _orgIndex) external view returns (string memory, uint)
-    {
-        return permImplementation.getOrgInfo(_orgIndex);
-    }
 
     // Role related functions
-    function addNewRole(string calldata _roleId, string calldata _orgId, uint _access, bool _voter) external
+    function addNewRole(string calldata _roleId, string calldata _orgId, uint _access, bool _voter, bool _admin) external
     {
-        permImplementation.addNewRole(_roleId, _orgId, _access, _voter, msg.sender);
+        permImplementation.addNewRole(_roleId, _orgId, _access, _voter, _admin, msg.sender);
     }
 
     function removeRole(string calldata _roleId, string calldata _orgId) external
@@ -99,43 +100,15 @@ contract PermissionsInterface {
         permImplementation.removeRole(_roleId, _orgId, msg.sender);
     }
 
-    function getRoleDetails(string calldata _roleId, string calldata _orgId) external view returns (string memory, string memory, uint, bool, bool)
+    function assignAdminRole(string calldata _orgId, address _account, string calldata _roleId) external
     {
-        return permImplementation.getRoleDetails(_roleId, _orgId);
-    }
-
-    // Org voter related functions
-    function getNumberOfVoters(string calldata _orgId) external view returns (uint)
-    {
-        return permImplementation.getNumberOfVoters(_orgId);
-    }
-
-
-    function checkIfVoterExists(string calldata _orgId, address _acct) external view returns (bool)
-    {
-        return permImplementation.checkIfVoterExists(_orgId, _acct);
-    }
-
-
-    function getVoteCount(string calldata _orgId) external view returns (uint, uint)
-    {
-        return permImplementation.getVoteCount(_orgId);
-    }
-
-    function getPendingOp(string calldata _orgId) external view returns (string memory, string memory, address, uint)
-    {
-        return permImplementation.getPendingOp(_orgId);
-    }
-
-    function assignOrgAdminAccount(string calldata _orgId, address _account) external
-    {
-        permImplementation.assignOrgAdminAccount(_orgId, _account, msg.sender);
+        permImplementation.assignAdminRole(_orgId, _account, _roleId, msg.sender);
 
     }
 
-    function approveOrgAdminAccount(address _account) external
+    function approveAdminRole(string calldata _orgId, address _account) external
     {
-        permImplementation.approveOrgAdminAccount(_account, msg.sender);
+        permImplementation.approveAdminRole(_orgId, _account, msg.sender);
 
     }
 
@@ -143,6 +116,11 @@ contract PermissionsInterface {
     {
         permImplementation.assignAccountRole(_acct, _orgId, _roleId, msg.sender);
 
+    }
+
+    function updateAccountStatus(string calldata _orgId, address _account, uint _status) external
+    {
+        permImplementation.updateAccountStatus(_orgId, _account, _status, msg.sender);
     }
 
     function addNode(string calldata _orgId, string calldata _enodeId) external
@@ -156,11 +134,6 @@ contract PermissionsInterface {
         permImplementation.updateNodeStatus(_orgId, _enodeId, _status, msg.sender);
     }
 
-    function getNodeStatus(string memory _enodeId) public view returns (uint)
-    {
-        return permImplementation.getNodeStatus(_enodeId);
-    }
-
     function isNetworkAdmin(address _account) public view returns (bool)
     {
         return permImplementation.isNetworkAdmin(_account);
@@ -168,6 +141,7 @@ contract PermissionsInterface {
 
     function isOrgAdmin(address _account, string memory _orgId) public view returns (bool)
     {
+
         return permImplementation.isOrgAdmin(_account, _orgId);
     }
 
@@ -176,9 +150,9 @@ contract PermissionsInterface {
         return permImplementation.validateAccount(_account, _orgId);
     }
 
-    function getAccountDetails(address _acct) external view returns (address, string memory, string memory, uint, bool)
+    function getPendingOp(string calldata _orgId) external view returns (string memory, string memory, address, uint)
     {
-        return permImplementation.getAccountDetails(_acct);
+        return permImplementation.getPendingOp(_orgId);
     }
 
 }

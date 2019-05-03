@@ -1,17 +1,17 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.5.3;
 
 contract simplestorage {
-  uint public storedData;
+  string public storedData;
 
-  function simplestorage(uint initVal) {
+   constructor (string memory initVal) public {
     storedData = initVal;
   }
 
-  function set(uint x) {
+  function set(string calldata x) external {
     storedData = x;
   }
 
-  function get() constant returns (uint retVal) {
+  function get() public view returns (string memory retVal) {
     return storedData;
   }
 }

@@ -27,9 +27,9 @@ echo -e "var bytecode = \"0x$bc\";">> ./$deployFile
 echo -e "var simpleContract = web3.eth.contract(abi);">> ./$deployFile
 if [ "$data" == "NONE" ]
 then
-    echo -e "var a = simpleContract.new(\"0xed9d02e382b34818e88b88a309c7fe71e65f419d\",{from:web3.eth.accounts[0], data: bytecode, gas: 670000000}, function(e, contract) {">> ./$deployFile
+    echo -e "var a = simpleContract.new(\"0xed9d02e382b34818e88b88a309c7fe71e65f419d\",{from:web3.eth.accounts[0], data: bytecode, gas: 7200000}, function(e, contract) {">> ./$deployFile
 else
-    echo -e "var a = simpleContract.new(\"$data\", {from:web3.eth.accounts[0], data: bytecode, gas: 670000000}, function(e, contract) {">> ./$deployFile
+    echo -e "var a = simpleContract.new(\"$data\", {from:web3.eth.accounts[0], data: bytecode, gas: 7200000}, function(e, contract) {">> ./$deployFile
 fi
 echo -e "\tif (e) {">> ./$deployFile
 echo -e "\t\tconsole.log(\"err creating contract\", e);">> ./$deployFile

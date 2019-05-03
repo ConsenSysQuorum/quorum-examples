@@ -67,14 +67,14 @@ fi
 echo "[*] Starting Ethereum nodes with ChainID and NetworkId of $NETWORK_ID"
 set -v
 #ARGS="--verbosity 5 --gcmode archive --networkid $NETWORK_ID --raft --rpc --rpcaddr 0.0.0.0 --rpcapi quorumAcctMgmt,quorumNodeMgmt,quorumOrgMgmt,admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum --emitcheckpoints"
-ARGS="--verbosity 3 --gcmode archive --permissioned --networkid $NETWORK_ID --raft --rpc --rpcaddr 0.0.0.0 --rpcapi quorumPermission,admin,db,eth,debug,miner,net,shh,txpool,personal,web3 --emitcheckpoints"
-PRIVATE_CONFIG=qdata/c1/tm.ipc nohup geth --datadir qdata/dd1 $ARGS --raftport 50401 --rpcport 22000 --port 21000 --unlock 0 --password passwords.txt 2>>qdata/logs/1.log &
+ARGS="--verbosity 3 --gcmode archive --permissioned --networkid $NETWORK_ID --raft --rpc --rpcaddr 0.0.0.0 --rpcapi quorumPermission,admin,db,eth,debug,miner,net,shh,txpool,personal,web3 --rpccorsdomain=* --rpcvhosts=* --emitcheckpoints"
+PRIVATE_CONFIG=qdata/c1/tm.ipc nohup geth --datadir qdata/dd1 $ARGS --raftport 50401 --rpcport 22000 --port 21000 --unlock 0,1,2,3,4,5,6 --password passwords.txt 2>>qdata/logs/1.log &
 sleep 1
-PRIVATE_CONFIG=qdata/c2/tm.ipc nohup geth --datadir qdata/dd2 $ARGS --raftport 50402 --rpcport 22001 --port 21001 --unlock 0 --password passwords.txt 2>>qdata/logs/2.log &
+PRIVATE_CONFIG=qdata/c2/tm.ipc nohup geth --datadir qdata/dd2 $ARGS --raftport 50402 --rpcport 22001 --port 21001 --unlock 0,1,2,3,4,5,6 --password passwords.txt 2>>qdata/logs/2.log &
 sleep 1
-PRIVATE_CONFIG=qdata/c3/tm.ipc nohup geth --datadir qdata/dd3 $ARGS --raftport 50403 --rpcport 22002 --port 21002 --unlock 0 --password passwords.txt 2>>qdata/logs/3.log &
+PRIVATE_CONFIG=qdata/c3/tm.ipc nohup geth --datadir qdata/dd3 $ARGS --raftport 50403 --rpcport 22002 --port 21002 --unlock 0,1,2,3,4,5,6 --password passwords.txt 2>>qdata/logs/3.log &
 sleep 1
-PRIVATE_CONFIG=qdata/c4/tm.ipc nohup geth --datadir qdata/dd4 $ARGS --raftport 50404 --rpcport 22003 --port 21003 --unlock 0 --password passwords.txt 2>>qdata/logs/4.log &
+#PRIVATE_CONFIG=qdata/c4/tm.ipc nohup geth --datadir qdata/dd4 $ARGS --raftport 50404 --rpcport 22003 --port 21003 --unlock 0 --password passwords.txt 2>>qdata/logs/4.log &
 #sleep 1
 #PRIVATE_CONFIG=qdata/c5/tm.ipc nohup geth --datadir qdata/dd5 $ARGS --raftjoinexisting 5 --raftport 50405 --rpcport 22004 --port 21004 --unlock 0 --password passwords.txt 2>>qdata/logs/5.log &
 #sleep 1

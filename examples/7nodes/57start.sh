@@ -31,6 +31,10 @@ while (( "$#" )); do
             tesseraOptions=$2
             shift 2
             ;;
+        --mode)
+            mode=$2
+            shift 2
+            ;;
         --node)
             node=$2
             shift 2
@@ -50,7 +54,13 @@ while (( "$#" )); do
     esac
 done
 
-NETWORK_ID=$(cat genesis.json | grep chainId | awk -F " " '{print $2}' | awk -F "," '{print $1}')
+if [ "$mode" == "RAFT" ]
+then
+    NETWORK_ID=$(cat genesis.json | grep chainId | awk -F " " '{print $2}' | awk -F "," '{print $1}')
+
+else
+    NETWORK_ID=$(cat istanbul-genesis.json | grep chainId | awk -F " " '{print $2}' | awk -F "," '{print $1}')
+fi
 
 if [ $NETWORK_ID -eq 1 ]
 then
@@ -81,9 +91,15 @@ let i=$node-1
 echo "[*] Starting Ethereum nodes with ChainID and NetworkId of $NETWORK_ID"
 set -v
 #ARGS="--networkid $NETWORK_ID --raft --rpc --rpcaddr 0.0.0.0 --rpcapi quorumAcctMgmt,quorumNodeMgmt,quorumOrgMgmt,admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum --emitcheckpoints"
-ARGS="--networkid $NETWORK_ID --permissioned --raft --rpc --rpcaddr 0.0.0.0 --rpcapi quorumAcctMgmt,quorumNodeMgmt,quorumOrgMgmt,admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum --emitcheckpoints"
 echo "Starting node $node"
-PRIVATE_CONFIG=qdata/c$node/tm.ipc nohup geth --datadir qdata/dd$node $ARGS --raftport 5040$node --raftjoinexisting $raftid --rpcport 2200$i --port 2100$i --unlock 0 --password passwords.txt 2>>qdata/logs/$node.log &
+if [ "$mode" == "RAFT" ]
+then
+    ARGS="--verbosity 3 --gcmode archive --permissioned --networkid $NETWORK_ID --raft --rpc --rpcaddr 0.0.0.0 --rpcapi quorumPermission,admin,db,eth,debug,miner,net,shh,txpool,personal,web3 --rpccorsdomain=* --rpcvhosts=* --emitcheckpoints"
+    PRIVATE_CONFIG=qdata/c$node/tm.ipc nohup geth --datadir qdata/dd$node $ARGS --raftport 5040$node --raftjoinexisting $raftid --rpcport 2200$i --port 2100$i --unlock 0,1,2,3,4,5,6 --password passwords.txt 2>>qdata/logs/$node.log &
+else
+    ARGS="--gcmode full --permissioned --istanbul.blockperiod 1 --networkid $NETWORK_ID --syncmode full --mine --minerthreads 1 --rpc --rpcaddr 0.0.0.0 --rpcapi quorumPermission,admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,istanbul --rpccorsdomain=* --rpcvhosts=*"
+    PRIVATE_CONFIG=qdata/c$node/tm.ipc nohup geth --datadir qdata/dd$node $ARGS --rpcport 2200$i --port 2100$i --unlock 0 --password passwords.txt 2>>qdata/logs/$node.log &
+fi
 set +v
 
 echo

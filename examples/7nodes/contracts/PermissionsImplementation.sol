@@ -19,6 +19,7 @@ contract PermissionsImplementation {
     string private adminRole;
     string private orgAdminRole;
 
+
     uint private fullAccess = 3;
 
     // checks if first time network boot up has happened or not
@@ -29,7 +30,7 @@ contract PermissionsImplementation {
         require(msg.sender == permUpgradable.getPermInterface(), "can be called by proxy only");
         _;
     }
-
+    // Modifiers
     // Checks if the given network boot up is pending exists
     modifier networkBootStatus(bool _status)
     {
@@ -51,6 +52,7 @@ contract PermissionsImplementation {
         _;
     }
 
+
     modifier orgExists(string memory _orgId) {
         require(checkOrgExists(_orgId) == true, "Org does not exists");
         _;
@@ -65,6 +67,8 @@ contract PermissionsImplementation {
         permUpgradable = PermissionsUpgradable(_permUpgradable);
     }
 
+    // initial set up related functions
+    // set policy related attributes
     function setPolicy(string calldata _nwAdminOrg, string calldata _nwAdminRole, string calldata _oAdminRole) external
     onlyProxy
     networkBootStatus(false)
@@ -74,7 +78,7 @@ contract PermissionsImplementation {
         orgAdminRole = _oAdminRole;
     }
 
-    function init(address _orgManager, address _rolesManager, address _acctManager, address _voterManager, address _nodeManager) external
+    function init(address _orgManager, address _rolesManager, address _acctManager, address _voterManager, address _nodeManager, uint _breadth, uint _depth) external
     onlyProxy
     networkBootStatus(false)
     {
@@ -84,8 +88,8 @@ contract PermissionsImplementation {
         voter = VoterManager(_voterManager);
         nodes = NodeManager(_nodeManager);
 
-        org.addAdminOrg(adminOrg);
-        roles.addRole(adminRole, adminOrg, fullAccess, true);
+        org.setUpOrg(adminOrg, _breadth, _depth);
+        roles.addRole(adminRole, adminOrg, fullAccess, true, true);
         accounts.setDefaults(adminRole, orgAdminRole);
     }
 
@@ -100,10 +104,8 @@ contract PermissionsImplementation {
     onlyProxy
     networkBootStatus(false)
     {
-        // add the account as a voter for the admin org
         updateVoterList(adminOrg, _acct, true);
-        // add the account as an account with full access into the admin org
-        accounts.addNWAdminAccount(_acct, adminOrg);
+        accounts.assignAdminRole(_acct, adminOrg, adminRole, 2);
     }
 
     // update the network boot status as true
@@ -116,40 +118,49 @@ contract PermissionsImplementation {
         return networkBoot;
     }
 
-//    Get network boot status
-    function getNetworkBootStatus() external view
-    returns (bool)
-    {
-        return networkBoot;
-    }
-
-    // function for adding a new master org
-    function addOrg(string calldata _orgId, string calldata _enodeId, address _caller) external
+    function addOrg(string calldata _orgId, string calldata _enodeId, address _account, address _caller) external
     onlyProxy
     networkBootStatus(true)
-    orgNotExists(_orgId)
     networkAdmin(_caller)
     {
-        voter.addVotingItem(adminOrg, _orgId, _enodeId, address(0), 1);
+        voter.addVotingItem(adminOrg, _orgId, _enodeId, _account, 1);
         org.addOrg(_orgId);
         nodes.addNode(_enodeId, _orgId);
+        require(validateAccount(_account, _orgId) == true, "Operation cannot be performed");
+        accounts.assignAdminRole(_account, _orgId, orgAdminRole, 1);
     }
 
-    function approveOrg(string calldata _orgId, string calldata _enodeId, address _caller) external
+    function approveOrg(string calldata _orgId, string calldata _enodeId, address _account, address _caller) external
     onlyProxy
     networkAdmin(_caller)
     {
         require(checkOrgStatus(_orgId, 1) == true, "Nothing to approve");
         if ((processVote(adminOrg, _caller, 1))) {
             org.approveOrg(_orgId);
-            roles.addRole(orgAdminRole, _orgId, fullAccess, true);
+            roles.addRole(orgAdminRole, _orgId, fullAccess, true, true);
             nodes.approveNode(_enodeId, _orgId);
+            accounts.addNewAdmin(_orgId, _account);
+        }
+    }
+
+    // function for adding a new master org
+    function addSubOrg(string calldata _pOrg, string calldata _orgId, string calldata _enodeId, address _account, address _caller) external
+    orgExists(_pOrg)
+    orgAdmin(_caller, _pOrg)
+    {
+        org.addSubOrg(_pOrg, _orgId);
+        string memory pid = string(abi.encodePacked(_pOrg, ".", _orgId));
+        if (bytes(_enodeId).length > 0) {
+            nodes.addNode(_enodeId, pid);
+        }
+        if (_account != address(0)) {
+            require(validateAccount(_account, pid) == true, "Operation cannot be performed");
+            accounts.assignAccountRole(_account, pid, orgAdminRole, true);
         }
     }
 
     function updateOrgStatus(string calldata _orgId, uint _status, address _caller) external
     onlyProxy
-    orgExists(_orgId)
     networkAdmin(_caller)
     {
         uint pendingOp;
@@ -159,10 +170,9 @@ contract PermissionsImplementation {
 
     function approveOrgStatus(string calldata _orgId, uint _status, address _caller) external
     onlyProxy
-    orgExists(_orgId)
     networkAdmin(_caller)
     {
-        require ((_status == 3 || _status == 5), "Operation not allowed");
+        require((_status == 3 || _status == 5), "Operation not allowed");
         uint pendingOp;
         if (_status == 3) {
             pendingOp = 2;
@@ -175,90 +185,53 @@ contract PermissionsImplementation {
             org.approveOrgStatusUpdate(_orgId, _status);
         }
     }
-    // returns org and master org details based on org index
-    function getOrgInfo(uint _orgIndex) external view
-    returns (string memory, uint)
-
-    {
-        return org.getOrgInfo(_orgIndex);
-    }
 
     // Role related functions
-    function addNewRole(string calldata _roleId, string calldata _orgId, uint _access, bool _voter, address _caller) external
+    function addNewRole(string calldata _roleId, string calldata _orgId, uint _access, bool _voter, bool _admin, address _caller) external
     onlyProxy
     orgApproved(_orgId)
     orgAdmin(_caller, _orgId)
     {
         //add new roles can be created by org admins only
-        roles.addRole(_roleId, _orgId, _access, _voter);
+        roles.addRole(_roleId, _orgId, _access, _voter, _admin);
     }
 
-    function removeRole(string calldata _roleId, string calldata _orgId,  address _caller) external
+    function removeRole(string calldata _roleId, string calldata _orgId, address _caller) external
     onlyProxy
     orgApproved(_orgId)
     orgAdmin(_caller, _orgId)
     {
         require(((keccak256(abi.encodePacked(_roleId)) != keccak256(abi.encodePacked(adminRole))) &&
-            (keccak256(abi.encodePacked(_roleId)) != keccak256(abi.encodePacked(orgAdminRole)))), "Admin roles cannot be removed");
+        (keccak256(abi.encodePacked(_roleId)) != keccak256(abi.encodePacked(orgAdminRole)))), "Admin roles cannot be removed");
         roles.removeRole(_roleId, _orgId);
     }
 
-    function getRoleDetails(string calldata _roleId, string calldata _orgId) external view
-    returns (string memory, string memory, uint, bool, bool)
-    {
-        return roles.getRoleDetails(_roleId, _orgId);
-
-    }
-
-    // Org voter related functions
-    function getNumberOfVoters(string calldata _orgId) external view
-    returns (uint){
-
-        return voter.getNumberOfValidVoters(_orgId);
-    }
-
-
-    function checkIfVoterExists(string calldata _orgId, address _acct) external view
-    returns (bool)
-    {
-        return voter.checkIfVoterExists(_orgId, _acct);
-    }
-
-    function getVoteCount(string calldata _orgId) external view returns (uint, uint)
-    {
-        return voter.getVoteCount(_orgId);
-    }
-
-    function getPendingOp(string calldata _orgId) external view
-    returns (string memory, string memory, address, uint)
-    {
-        return voter.getPendingOpDetails(_orgId);
-    }
-
-    function assignOrgAdminAccount(string calldata _orgId, address _account, address _caller) external
+    // Account related functions
+    function assignAdminRole(string calldata _orgId, address _account, string calldata _roleId, address _caller) external
     onlyProxy
     orgExists(_orgId)
     networkAdmin(_caller)
     {
-        require(validateAccount(_account, _orgId) == true, "Operation cannot be performed");
-        // check if orgAdmin already exists if yes then op cannot be performed
-        require(checkOrgAdminExists(_orgId) != true, "org admin exists");
-        // assign the account org admin role and propose voting
-        accounts.assignAccountRole(_account, _orgId, orgAdminRole);
+        accounts.assignAdminRole(_account, _orgId, _roleId, 1);
         //add voting item
         voter.addVotingItem(adminOrg, _orgId, "", _account, 4);
     }
 
-    function approveOrgAdminAccount(address _account, address _caller) external
+    function approveAdminRole(string calldata _orgId, address _account, address _caller) external
     onlyProxy
     networkAdmin(_caller)
     {
-        require(isNetworkAdmin(_caller) == true, "can be called from network admin only");
         if ((processVote(adminOrg, _caller, 4))) {
-            accounts.approveOrgAdminAccount(_account);
+            (bool ret, address acct) = accounts.removeExistingAdmin(_orgId);
+            if (ret) {
+                updateVoterList(adminOrg, acct, false);
+            }
+            bool ret1 = accounts.addNewAdmin(_orgId, _account);
+            if (ret1) {
+                updateVoterList(adminOrg, _account, true);
+            }
         }
     }
-
 
     function assignAccountRole(address _acct, string memory _orgId, string memory _roleId, address _caller) public
     onlyProxy
@@ -267,49 +240,65 @@ contract PermissionsImplementation {
     {
         require(validateAccount(_acct, _orgId) == true, "Operation cannot be performed");
         require(roleExists(_roleId, _orgId) == true, "role does not exists");
-        bool newRoleVoter = isVoterRole(_roleId, _orgId);
-//        // check the role of the account. if the current role is voter and new role is also voter
-//        // voterlist change is not required. else voter list needs to be changed
-        string memory acctRole = accounts.getAccountRole(_acct);
-        if (keccak256(abi.encodePacked(acctRole)) == keccak256(abi.encodePacked("NONE"))) {
-            //new account
-            if (newRoleVoter) {
-                // add to voter list
-                updateVoterList(_orgId, _acct, true);
-            }
-        }
-        else {
-            bool currRoleVoter = isVoterRole(acctRole, _orgId);
-            if (!(currRoleVoter && newRoleVoter)) {
-                if (newRoleVoter) {
-                    // add to voter list
-                    updateVoterList(_orgId, _acct, true);
-                }
-                else {
-                    // delete from voter list
-                    updateVoterList(_orgId, _acct, false);
-                }
-            }
-        }
-        accounts.assignAccountRole(_acct, _orgId, _roleId);
+        bool admin = roles.isAdminRole(_roleId, _orgId, getUltimateParent(_orgId));
+        accounts.assignAccountRole(_acct, _orgId, _roleId, admin);
     }
 
+    function updateAccountStatus(string calldata _orgId, address _account, uint _status, address _caller) external
+    onlyProxy
+    orgAdmin(_caller, _orgId)
+    {
+        accounts.updateAccountStatus(_orgId, _account, _status);
+    }
+
+    // Node related functions
     function addNode(string calldata _orgId, string calldata _enodeId, address _caller) external
     onlyProxy
     orgApproved(_orgId)
     orgAdmin(_caller, _orgId)
     {
         // check that the node is not part of another org
-        require(getNodeStatus(_enodeId) == 0, "Node present already");
         nodes.addOrgNode(_enodeId, _orgId);
     }
 
-    function getNodeStatus(string memory _enodeId) public view
-    returns (uint)
+    function updateNodeStatus(string calldata _orgId, string calldata _enodeId, uint _status, address _caller) external
+    onlyProxy
+    orgAdmin(_caller, _orgId)
     {
-        return (nodes.getNodeStatus(_enodeId));
+        nodes.updateNodeStatus(_enodeId, _orgId, _status);
     }
 
+    //    Get network boot status
+    function getNetworkBootStatus() external view
+    returns (bool)
+    {
+        return networkBoot;
+    }
+
+    // Voter related functions
+    function updateVoterList(string memory _orgId, address _account, bool _add) internal
+    {
+        if (_add) {
+            voter.addVoter(_orgId, _account);
+        }
+        else {
+            voter.deleteVoter(_orgId, _account);
+        }
+    }
+
+    function processVote(string memory _orgId, address _caller, uint _pendingOp) internal
+    returns (bool)
+    {
+        return voter.processVote(_orgId, _caller, _pendingOp);
+    }
+
+    function getPendingOp(string calldata _orgId) external view
+    returns (string memory, string memory, address, uint)
+    {
+        return voter.getPendingOpDetails(_orgId);
+    }
+
+    // helper functions
     function isNetworkAdmin(address _account) public view
     returns (bool)
     {
@@ -319,13 +308,16 @@ contract PermissionsImplementation {
     function isOrgAdmin(address _account, string memory _orgId) public view
     returns (bool)
     {
-        return (accounts.checkOrgAdmin(_account, _orgId));
+        if (accounts.checkOrgAdmin(_account, _orgId, getUltimateParent(_orgId))) {
+            return true;
+        }
+        return roles.isAdminRole(accounts.getAccountRole(_account), _orgId, getUltimateParent(_orgId));
     }
 
     function validateAccount(address _account, string memory _orgId) public view
     returns (bool)
     {
-        return (accounts.valAcctAccessChange(_account, _orgId));
+        return (accounts.validateAccount(_account, _orgId));
     }
 
     function checkOrgExists(string memory _orgId) internal view
@@ -345,51 +337,29 @@ contract PermissionsImplementation {
     {
         return org.checkOrgStatus(_orgId, _status);
     }
+
     function checkOrgAdminExists(string memory _orgId) internal view
     returns (bool)
     {
-        return (accounts.orgAdminExists(_orgId));
+        return accounts.orgAdminExists(_orgId);
     }
 
     function roleExists(string memory _roleId, string memory _orgId) internal view
     returns (bool)
     {
-        return (roles.roleExists(_roleId, _orgId));
+        return roles.roleExists(_roleId, _orgId, org.getUltimateParent(_orgId));
     }
+
     function isVoterRole(string memory _roleId, string memory _orgId) internal view
     returns (bool)
     {
-        return roles.isVoterRole(_roleId, _orgId);
+        return roles.isVoterRole(_roleId, _orgId, getUltimateParent(_orgId));
     }
 
-    function processVote(string memory _orgId, address _caller, uint _pendingOp) internal
-    returns (bool)
+    function getUltimateParent(string memory _orgId) internal view
+    returns (string memory)
     {
-        return voter.processVote(_orgId, _caller, _pendingOp);
-    }
-
-    function updateVoterList(string memory _orgId, address _account, bool _add) internal
-    {
-        if (_add) {
-            voter.addVoter(_orgId, _account);
-        }
-        else {
-            voter.deleteVoter(_orgId, _account);
-        }
-    }
-
-    function getAccountDetails(address _acct) external view
-    returns (address, string memory, string memory, uint, bool)
-    {
-        return  accounts.getAccountDetails(_acct);
-    }
-
-    function updateNodeStatus(string calldata _orgId, string calldata _enodeId, uint _status, address _caller) external
-    onlyProxy
-    orgExists(_orgId)
-    orgAdmin(_caller, _orgId)
-    {
-        nodes.updateNodeStatus(_enodeId, _orgId, _status);
+        return org.getUltimateParent(_orgId);
     }
 
 }

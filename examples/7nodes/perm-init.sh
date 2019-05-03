@@ -13,8 +13,8 @@ cp permission-config.json qdata/dd2/
 echo "[*] copying to  node 3 data dir"
 cp permission-config.json qdata/dd3/
 
-echo "[*] copying to  node 4 data dir"
-cp permission-config.json qdata/dd4/
+#echo "[*] copying to  node 4 data dir"
+#cp permission-config.json qdata/dd4/
 
 #echo "[*] copying to  node 5 data dir"
 #cp permission-config.json qdata/dd5/

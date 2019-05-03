@@ -23,6 +23,8 @@ deployContract(){
     name=$2
     op=`./runscript.sh ../JS/$file`
     tx=`echo $op | head -1 | tr -s " "| cut -f5 -d " "`
+    sleep 2
+    echo "tx id is ------------ $tx"
     contAddr=`./get-contract-address.sh $tx`
     if [ "$name" == "r" ]
     then
@@ -63,14 +65,18 @@ deployContract(){
     then
         echo "Permissions upgradable is - $contAddr"
         upgr=$contAddr
+        echo "upgradable is $upgr"
         updateLoadScript "load-PermissionsUpgradable.js" $name $contAddr
     fi
 }
 # first deploy upgradable and then rest
+echo "creating deploy files upgradable - $upgr"
 ./cref.sh PermissionsUpgradable $upgr
 deployContract "deploy-PermissionsUpgradable.js" "upgr"
 #deploy others
+echo "creating OrgManager files upgradable - $upgr"
 ./cref.sh OrgManager $upgr
+echo "creating RoleManager files upgradable - $upgr"
 ./cref.sh RoleManager $upgr
 ./cref.sh NodeManager $upgr
 ./cref.sh VoterManager $upgr
