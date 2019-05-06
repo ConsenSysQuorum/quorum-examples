@@ -16,7 +16,7 @@ then
     ./istanbul-init.sh
     ./istanbul-start.sh
     echo "waiting 10 secs for network to sync up"
-    sleep 120
+    sleep 60
 else
     echo "############ Starting the network in raft mode #############"
     ./raft-init.sh
