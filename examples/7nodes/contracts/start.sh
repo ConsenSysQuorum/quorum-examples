@@ -20,13 +20,13 @@ then
 else
     echo "############ Starting the network in raft mode #############"
     ./raft-init.sh
-    ./raft-start.sh
+    ./raft-start-none.sh
 fi
 
 # deploy the contracts
 echo "############ Deploying permissions related contarcts #############"
 cd contracts
-cp /Users/saiv/go/src/github.com/ethereum/go-ethereum/controls/permission/*.sol .
+cp /Users/peter/IdeaProjects/go/src/github.com/ethereum/go-ethereum/controls/permission/*.sol .
 ./deploy.sh
 
 # perform upgr.init
