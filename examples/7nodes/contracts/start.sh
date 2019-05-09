@@ -14,9 +14,13 @@ if [ "$mode"  ==  "IBFT" ]
 then
     echo "######### starting in IBFT mode to deploy the contracts ######"
     ./istanbul-init.sh
-    ./istanbul-start.sh
-    echo "waiting 10 secs for network to sync up"
-    sleep 60
+    ./istanbul-start-none.sh
+    echo "waiting 60 secs for network to sync up"
+    for i in {1..50}
+    do
+        sleep 1
+        echo $i
+    done
 else
     echo "############ Starting the network in raft mode #############"
     ./raft-init.sh
@@ -26,7 +30,7 @@ fi
 # deploy the contracts
 echo "############ Deploying permissions related contarcts #############"
 cd contracts
-cp /Users/peter/IdeaProjects/go/src/github.com/ethereum/go-ethereum/controls/permission/*.sol .
+cp /Users/peter/IdeaProjects/go/src/github.com/ethereum/go-ethereum/permission/contract/*.sol .
 ./deploy.sh
 
 # perform upgr.init

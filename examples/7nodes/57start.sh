@@ -94,10 +94,10 @@ set -v
 echo "Starting node $node"
 if [ "$mode" == "RAFT" ]
 then
-    ARGS="--verbosity 3 --gcmode archive --permissioned --networkid $NETWORK_ID --raft --rpc --rpcaddr 0.0.0.0 --rpcapi quorumPermission,admin,db,eth,debug,miner,net,shh,txpool,personal,web3 --rpccorsdomain=* --rpcvhosts=* --emitcheckpoints"
-    PRIVATE_CONFIG=qdata/c$node/tm.ipc nohup geth --datadir qdata/dd$node $ARGS --raftport 5040$node --raftjoinexisting $raftid --rpcport 2200$i --port 2100$i --unlock 0 --password passwords.txt 2>>qdata/logs/$node.log &
+    ARGS="--verbosity 3 --gcmode archive --permissioned --networkid $NETWORK_ID --raft --rpc --rpcaddr 0.0.0.0 --rpcapi quorumPermission,admin,db,eth,debug,miner,net,shh,txpool,personal,web3,raft --rpccorsdomain=* --rpcvhosts=* --emitcheckpoints"
+    PRIVATE_CONFIG=qdata/c$node/tm.ipc nohup geth --datadir qdata/dd$node $ARGS --raftport 5040$node --rpcport 2200$i --port 2100$i --unlock 0 --password passwords.txt 2>>qdata/logs/$node.log &
 else
-    ARGS="--gcmode full --permissioned --istanbul.blockperiod 1 --networkid $NETWORK_ID --syncmode full --mine --minerthreads 1 --rpc --rpcaddr 0.0.0.0 --rpcapi quorumPermission,admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,istanbul --rpccorsdomain=* --rpcvhosts=*"
+    ARGS="--gcmode full --permissioned --istanbul.blockperiod 1 --networkid $NETWORK_ID --syncmode full --rpc --rpcaddr 0.0.0.0 --rpcapi quorumPermission,admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,istanbul --rpccorsdomain=* --rpcvhosts=*"
     PRIVATE_CONFIG=qdata/c$node/tm.ipc nohup geth --datadir qdata/dd$node $ARGS --rpcport 2200$i --port 2100$i --unlock 0 --password passwords.txt 2>>qdata/logs/$node.log &
 fi
 set +v

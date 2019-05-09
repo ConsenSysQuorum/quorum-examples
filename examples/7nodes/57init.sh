@@ -10,8 +10,6 @@ rm -rf qdata/dd$node
 #rm -rf qdata/dd7
 mkdir -p qdata/logs
 
-let i=$node-1
-
 #if [ $node -eq 5 ]
 #then
 echo "[*] Configuring node $node"
@@ -27,7 +25,7 @@ then
 	cp raft/nodekey$node qdata/dd$node/geth/nodekey
 	geth --datadir qdata/dd$node init genesis.json
 else
-	cp $i/nodekey qdata/dd$node/geth/nodekey
+	cp raft/nodekey$node qdata/dd$node/geth/nodekey
 	geth --datadir qdata/dd$node init istanbul-genesis.json
 fi
 ./tessera-init57.sh $node
