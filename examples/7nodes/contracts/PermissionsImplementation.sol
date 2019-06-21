@@ -25,18 +25,12 @@ contract PermissionsImplementation {
     // checks if first time network boot up has happened or not
     bool private networkBoot = false;
 
-    // Modifiers
     modifier onlyProxy
     {
         require(msg.sender == permUpgradable.getPermInterface(), "can be called by proxy only");
         _;
     }
-
-    modifier onlyUpgradeable {
-        require(msg.sender == address(permUpgradable));
-        _;
-    }
-
+    // Modifiers
     // Checks if the given network boot up is pending exists
     modifier networkBootStatus(bool _status)
     {
@@ -75,13 +69,8 @@ contract PermissionsImplementation {
     }
 
     // constructor. sets the upgradable address
-    constructor (address _permUpgradable, address _orgManager, address _rolesManager, address _acctManager, address _voterManager, address _nodeManager) public {
+    constructor (address _permUpgradable) public {
         permUpgradable = PermissionsUpgradable(_permUpgradable);
-        org = OrgManager(_orgManager);
-        roles = RoleManager(_rolesManager);
-        accounts = AccountManager(_acctManager);
-        voter = VoterManager(_voterManager);
-        nodes = NodeManager(_nodeManager);
     }
 
     // initial set up related functions
@@ -95,21 +84,17 @@ contract PermissionsImplementation {
         orgAdminRole = _oAdminRole;
     }
 
-    function setMigrationPolicy(string calldata _nwAdminOrg, string calldata _nwAdminRole, string calldata _oAdminRole, bool _networkBootStatus) external
-    onlyUpgradeable
-    networkBootStatus(false)
-    {
-        adminOrg = _nwAdminOrg;
-        adminRole = _nwAdminRole;
-        orgAdminRole = _oAdminRole;
-        networkBoot = _networkBootStatus;
-    }
-
     // called at the time network initialization to link all the contracts and set defaults
-    function init(uint _breadth, uint _depth) external
+    function init(address _orgManager, address _rolesManager, address _acctManager, address _voterManager, address _nodeManager, uint _breadth, uint _depth) external
     onlyProxy
     networkBootStatus(false)
     {
+        org = OrgManager(_orgManager);
+        roles = RoleManager(_rolesManager);
+        accounts = AccountManager(_acctManager);
+        voter = VoterManager(_voterManager);
+        nodes = NodeManager(_nodeManager);
+
         org.setUpOrg(adminOrg, _breadth, _depth);
         roles.addRole(adminRole, adminOrg, fullAccess, true, true);
         accounts.setDefaults(adminRole, orgAdminRole);
@@ -338,13 +323,6 @@ contract PermissionsImplementation {
     returns (string memory, string memory, address, uint)
     {
         return voter.getPendingOpDetails(_orgId);
-    }
-
-    // returns the policy details for migration
-    function getPolicyDetails() external view
-    returns (string memory, string memory, string memory, bool)
-    {
-        return (adminOrg, adminRole, orgAdminRole, networkBoot);
     }
 
     // helper functions
