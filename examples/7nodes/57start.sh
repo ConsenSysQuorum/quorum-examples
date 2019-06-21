@@ -76,10 +76,10 @@ if [ "$privacyImpl" == "tessera" ]; then
     echo "${tesseraOptions}"
     echo "$node"
     echo "----------------------------"
-    ./tessera-start57.sh ${tesseraOptions} --nodelow $node --nodehigh $node
+    #./tessera-start57.sh ${tesseraOptions} --nodelow $node --nodehigh $node
 elif [ "$privacyImpl" == "constellation" ]; then
     echo "[*] Starting Constellation nodes"
-    ./constellation-start.sh
+    #./constellation-start.sh
 else
     echo "Unsupported privacy implementation: ${privacyImpl}"
     usage
@@ -95,10 +95,10 @@ echo "Starting node $node"
 if [ "$mode" == "RAFT" ]
 then
     ARGS="--verbosity 3 --gcmode archive --permissioned --networkid $NETWORK_ID --raft --rpc --rpcaddr 0.0.0.0 --rpcapi quorumPermission,admin,db,eth,debug,miner,net,shh,txpool,personal,web3,raft --rpccorsdomain=* --rpcvhosts=* --emitcheckpoints"
-    PRIVATE_CONFIG=qdata/c$node/tm.ipc nohup geth --datadir qdata/dd$node $ARGS --raftport 5040$node --rpcport 2200$i --port 2100$i --unlock 0 --password passwords.txt 2>>qdata/logs/$node.log &
+    PRIVATE_CONFIG=ignore nohup geth --datadir qdata/dd$node $ARGS --raftport 5040$node --rpcport 2200$i --port 2100$i --unlock 0 --password passwords.txt 2>>qdata/logs/$node.log &
 else
     ARGS="--gcmode full --permissioned --istanbul.blockperiod 1 --networkid $NETWORK_ID --syncmode full --rpc --rpcaddr 0.0.0.0 --rpcapi quorumPermission,admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,istanbul --rpccorsdomain=* --rpcvhosts=*"
-    PRIVATE_CONFIG=qdata/c$node/tm.ipc nohup geth --datadir qdata/dd$node $ARGS --rpcport 2200$i --port 2100$i --unlock 0 --password passwords.txt 2>>qdata/logs/$node.log &
+    PRIVATE_CONFIG=ignore nohup geth --datadir qdata/dd$node $ARGS --rpcport 2200$i --port 2100$i --unlock 0 --password passwords.txt 2>>qdata/logs/$node.log &
 fi
 set +v
 
