@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 txid=$1
 
-x=$(geth attach ipc:/Users/peter/IdeaProjects/quorum-examples/examples/7nodes/qdata/dd1/geth.ipc <<EOF
+x=$(geth attach ipc:${EXAMPLENODEFOLDER}/qdata/dd1/geth.ipc <<EOF
 loadScript("load-PermissionsUpgradable.js");
 var tx = upgr.init(intr, impl, {from: eth.accounts[0], gas: 4500000});
 loadScript("load-PermissionsInterface.js");

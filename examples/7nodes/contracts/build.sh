@@ -2,7 +2,7 @@
 
 contract=$1
 data=$2
-cd /Users/peter/IdeaProjects/quorum-examples/examples/7nodes/contracts
+cd ${EXAMPLENODEFOLDER}/contracts
 
 #echo "INside build.sh $1.sol $2"
 
@@ -11,7 +11,7 @@ solc --bin --optimize --overwrite -o ./abi $1.sol 2>>/dev/null
 solc --abi --optimize --overwrite -o ./abi $1.sol 2>>/dev/null
 
 
-cd /Users/peter/IdeaProjects/quorum-examples/examples/7nodes/JS
+cd ${EXAMPLENODEFOLDER}/JS
 
 deployFile="deploy-$contract.js"
 loadFile="load-$contract.js"
@@ -53,4 +53,4 @@ echo -e "var abi = $abi;">> ./$loadFile
 
 
 
-cd /Users/peter/IdeaProjects/quorum-examples/examples/7nodes/contracts
+cd ${EXAMPLENODEFOLDER}/contracts

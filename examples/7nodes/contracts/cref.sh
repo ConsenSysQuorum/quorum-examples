@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-cd /Users/peter/IdeaProjects/quorum-examples/examples/7nodes/contracts
+cd ${EXAMPLENODEFOLDER}/contracts
 #./build.sh OrgManager
 #./build.sh RoleManager
 #./build.sh NodeManager

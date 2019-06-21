@@ -9,6 +9,8 @@ cd ..
 ./stop.sh
 echo $PWD
 
+export EXAMPLENODEFOLDER=$(PWD)
+
 # run raft-init.sh
 if [ "$mode"  ==  "IBFT" ]
 then
@@ -30,7 +32,6 @@ fi
 # deploy the contracts
 echo "############ Deploying permissions related contarcts #############"
 cd contracts
-cp /Users/peter/IdeaProjects/go/src/github.com/ethereum/go-ethereum/permission/contract/*.sol .
 ./deploy.sh
 
 # perform upgr.init
