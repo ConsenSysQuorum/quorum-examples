@@ -1,0 +1,83 @@
+#for the latest instructions on how to use/configure clef please use the following resources:
+#https://github.com/ethereum/go-ethereum/blob/master/cmd/clef/tutorial.md
+#https://github.com/ethereum/go-ethereum/tree/master/cmd/clef
+
+#create some clef directories
+mkdir clef
+cd clef
+mkdir keystore
+mkdir config
+
+
+#init - remember the password
+clef --keystore ./keystore --configdir ./config init
+
+#create rules.js with this content (see)
+function ApproveListing(){
+    return "Approve"
+}
+function ApproveSignData(r){
+    return "Approve"
+}
+function ApproveTx(r){
+    return "Approve"
+}
+
+#generate sha256 of the rules.js file
+shasum -a 256 rules.js
+
+#attest the rules file in clef
+clef --keystore ./keystore --configdir ./config attest 7fec5dabe6f0328c41cde85609d13d2e6e1d1ad6337c351e91d0468db61826c3
+
+#create an account
+curl -H "Content-Type: application/json" -X POST --data '{"id": 0,"jsonrpc": "2.0","method": "account_new","params": []}' http://localhost:8550/
+
+#set a pass for that account
+clef --keystore ./keystore --configdir ./config setpw "youracct" "yourpass"
+
+#copy the 4bytes json to the clef folder (it is there in the quorum sourcecode)
+cp <path_to_quorum>/4byte.json .
+
+#start clef with rpc enabled
+clef --rules rules.js --advanced --keystore ./keystore --configdir ./config --rpc
+
+#you should now be able to request transactions to be signed with that account
+
+#here are the changes required to allow clef to sign transactions using the Homestead signer (in .patch format):
+Index: signer/core/api.go
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- signer/core/api.go	(revision d10680f97f3942ada5954f96b4468719c68a330b)
++++ signer/core/api.go	(date 1561124437000)
+@@ -493,8 +493,13 @@
+ 	// Convert fields into a real transaction
+ 	var unsignedTx = result.Transaction.toTransaction()
+
++	chainIdToUse := api.chainID;
++	if args.IsPrivate {
++		chainIdToUse = nil
++	}
++
+ 	// The one to sign is the one that was returned from the UI
+-	signedTx, err := wallet.SignTxWithPassphrase(acc, result.Password, unsignedTx, api.chainID)
++	signedTx, err := wallet.SignTxWithPassphrase(acc, result.Password, unsignedTx, chainIdToUse)
+ 	if err != nil {
+ 		api.UI.ShowError(err.Error())
+ 		return nil, err
+Index: signer/core/types.go
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- signer/core/types.go	(revision d10680f97f3942ada5954f96b4468719c68a330b)
++++ signer/core/types.go	(date 1561124437000)
+@@ -99,6 +99,7 @@
+ 	GasPrice hexutil.Big              `json:"gasPrice"`
+ 	Value    hexutil.Big              `json:"value"`
+ 	Nonce    hexutil.Uint64           `json:"nonce"`
++	IsPrivate bool         `json:"isPrivate"`
+ 	// We accept "data" and "input" for backwards-compatibility reasons.
+ 	Data  *hexutil.Bytes `json:"data"`
+ 	Input *hexutil.Bytes `json:"input"`
