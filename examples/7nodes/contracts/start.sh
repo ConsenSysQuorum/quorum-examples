@@ -56,7 +56,7 @@ echo "############ Starting the network in permissioned mode #############"
 if [ "$mode"  ==  "IBFT" ]
 then
     echo "######### starting in IBFT mode to deploy the contracts ######"
-    ./istanbul-start.sh
+    ./istanbul-start-ignore.sh
 else
     echo "############ Starting the network in raft mode #############"
     ./raft-start.sh
