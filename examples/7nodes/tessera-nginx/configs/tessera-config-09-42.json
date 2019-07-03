@@ -1,0 +1,79 @@
+{
+    "useWhiteList": false,
+    "jdbc": {
+        "username": "sa",
+        "password": "",
+        "url": "jdbc:h2:/Users/nicolae/Develop/new-quorum-examples/quorum-examples/examples/7nodes/qdata/c4/db4;MODE=Oracle;TRACE_LEVEL_SYSTEM_OUT=0;AUTO_SERVER=TRUE",
+        "autoCreateTables": true
+    },
+    "serverConfigs":[
+        {
+            "app":"ThirdParty",
+            "enabled": true,
+            "serverAddress": "http://localhost:29084",
+            "communicationType" : "REST"
+        },
+        {
+            "app":"Q2T",
+            "enabled": true,
+            "serverAddress":"unix:/Users/nicolae/Develop/new-quorum-examples/quorum-examples/examples/7nodes/qdata/c4/tm2.ipc",
+            "communicationType" : "REST"
+        },
+        {
+            "app":"P2P",
+            "enabled": true,
+            "bindingAddress":"http://localhost:29004",
+            "serverAddress":"http://localhost:9004",
+            "sslConfig": {
+                "tls": "OFF",
+                "generateKeyStoreIfNotExisted": true,
+                "serverKeyStore": "/Users/nicolae/Develop/new-quorum-examples/quorum-examples/examples/7nodes/qdata/c4/server4-keystore",
+                "serverKeyStorePassword": "quorum",
+                "serverTrustStore": "/Users/nicolae/Develop/new-quorum-examples/quorum-examples/examples/7nodes/qdata/c4/server-truststore",
+                "serverTrustStorePassword": "quorum",
+                "serverTrustMode": "TOFU",
+                "knownClientsFile": "/Users/nicolae/Develop/new-quorum-examples/quorum-examples/examples/7nodes/qdata/c4/knownClients",
+                "clientKeyStore": "/Users/nicolae/Develop/new-quorum-examples/quorum-examples/examples/7nodes/qdata/c4/client4-keystore",
+                "clientKeyStorePassword": "quorum",
+                "clientTrustStore": "/Users/nicolae/Develop/new-quorum-examples/quorum-examples/examples/7nodes/qdata/c4/client-truststore",
+                "clientTrustStorePassword": "quorum",
+                "clientTrustMode": "TOFU",
+                "knownServersFile": "/Users/nicolae/Develop/new-quorum-examples/quorum-examples/examples/7nodes/qdata/c4/knownServers"
+            },
+            "communicationType" : "REST"
+        }
+    ],
+    "peer": [
+        {
+            "url": "http://localhost:9001"
+        },
+        {
+            "url": "http://localhost:9002"
+        },
+        {
+            "url": "http://localhost:9003"
+        },
+        {
+            "url": "http://localhost:9004"
+        },
+        {
+            "url": "http://localhost:9005"
+        },
+        {
+            "url": "http://localhost:9006"
+        },
+        {
+            "url": "http://localhost:9007"
+        }
+    ],
+    "keys": {
+        "passwords": [],
+        "keyData": [
+            {
+                "privateKeyPath": "/Users/nicolae/Develop/new-quorum-examples/quorum-examples/examples/7nodes/qdata/c4/tm.key",
+                "publicKeyPath": "/Users/nicolae/Develop/new-quorum-examples/quorum-examples/examples/7nodes/qdata/c4/tm.pub"
+            }
+        ]
+    },
+    "alwaysSendTo": []
+}
