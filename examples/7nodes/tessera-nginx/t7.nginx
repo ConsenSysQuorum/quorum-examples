@@ -1,0 +1,69 @@
+error_log /Users/nicolae/Develop/new-quorum-examples/quorum-examples/examples/7nodes/tessera-nginx/log/error.log;
+events {
+    worker_connections  1024;  ## Default: 1024
+}
+http {
+    upstream tesseraTP {
+        server localhost:19084;
+        server localhost:29084;
+    }
+
+    upstream tesseraP2P-withBackup {
+        #one tessera is marked as backup. This means that all partyinfo requests go to 19004 unless it is down.
+        #coupled with mirroring it should ensure that all partyinfo requests go to both tessera nodes.
+        server localhost:19004;
+        server localhost:29004 backup;
+    }
+
+    upstream tesseraP2P {
+        server localhost:19004;
+        server localhost:29004;
+    }
+    upstream tesseraQ2T {
+        server unix:/Users/nicolae/Develop/new-quorum-examples/quorum-examples/examples/7nodes/qdata/c4/tm1.ipc;
+        server unix:/Users/nicolae/Develop/new-quorum-examples/quorum-examples/examples/7nodes/qdata/c4/tm2.ipc;
+    }
+    server {
+        access_log /Users/nicolae/Develop/new-quorum-examples/quorum-examples/examples/7nodes/tessera-nginx/log/access-tp.log;
+        #third party
+        listen 9084;
+        location / {
+            proxy_pass http://tesseraTP;
+        }
+    }
+    server {
+        access_log /Users/nicolae/Develop/new-quorum-examples/quorum-examples/examples/7nodes/tessera-nginx/log/access-p2p.log;
+        #Peer to peer
+        listen 9004;
+        location /resend {
+            proxy_pass http://tesseraP2P/resend;
+        }
+        location /push {
+            proxy_pass http://tesseraP2P/push;
+        }
+        location /partyinfo/validate {
+            proxy_pass http://tesseraP2P/partyinfo/validate;
+        }
+
+        #all requests go to the first host and are mirrored to the second host (no round robin here)
+        #if the first host is down, all requests go to the backup and, unfortunately, they are duplicated by the
+        #mirroring logic
+        location /partyinfo {
+            mirror /partyinfo-mirror;
+            proxy_pass http://tesseraP2P-withBackup/partyinfo;
+        }
+        location /partyinfo-mirror {
+            #find a way to identify the server the original request was sent to and ignore if it is being sent to the same host
+            internal;
+            proxy_pass http://localhost:29004/partyinfo;
+        }
+    }
+    server {
+        access_log /Users/nicolae/Develop/new-quorum-examples/quorum-examples/examples/7nodes/tessera-nginx/log/access-q2t.log;
+        #quorum to tessera
+        listen unix:/Users/nicolae/Develop/new-quorum-examples/quorum-examples/examples/7nodes/qdata/c4/tm.ipc;
+        location / {
+            proxy_pass http://tesseraQ2T;
+        }
+    }
+}
