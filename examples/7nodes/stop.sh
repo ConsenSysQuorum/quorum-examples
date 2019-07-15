@@ -1,5 +1,6 @@
 #!/bin/bash
 killall -INT geth
+killall -INT gethmaster
 killall bootnode constellation-node
 
 if [ "`jps | grep tessera`" != "" ]
