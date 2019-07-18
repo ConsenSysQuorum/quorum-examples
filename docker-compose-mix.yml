@@ -10,7 +10,7 @@ version: "3.6"
 x-quorum-dns-def:
   &quorum-dns-def
   restart: "on-failure"
-  image: "${QUORUM_DOCKER_IMAGE:-quorumengineering/quorum:dns-test}"
+  image: "${QUORUM_DOCKER_IMAGE:-prdfox/quorum:dns-test}"
   expose:
     - "21000"
     - "50400"
@@ -44,6 +44,7 @@ x-quorum-dns-def:
         --identity node$${NODE_ID}-${QUORUM_CONSENSUS:-istanbul} \
         --datadir $${DDIR} \
         --bootnodes enode://ac6b1096ca56b9f6d004b779ae3728bf83f8e22453404cc3cef16a3d9b96608bc67c4b30db88e0a5a6c6390213f7acbe1153ff6d23ce57380104288ae19373ef@node1:21000 \
+        --hostname node$${NODE_ID} \
         --verbosity 5 \
         --networkid $${NETWORK_ID} \
         --rpc \
