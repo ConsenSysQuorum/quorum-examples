@@ -1,0 +1,23 @@
+error_log /Users/nicolae/Develop/new-quorum-examples/quorum-examples/examples/7nodes/tessera-nginx/log/error-q4.log;
+
+events {
+    worker_connections  1024;  ## Default: 1024
+}
+stream {
+
+    log_format proxy '$remote_addr [$time_local] '
+    '$protocol $status $bytes_sent $bytes_received '
+    '$session_time "$upstream_addr" '
+    '"$upstream_bytes_sent" "$upstream_bytes_received" "$upstream_connect_time"';
+
+    upstream quorumRPC {
+        server localhost:42003;
+        server localhost:42007;
+    }
+    server {
+        access_log /Users/nicolae/Develop/new-quorum-examples/quorum-examples/examples/7nodes/tessera-nginx/log/access-qRPC.log proxy;
+        #quorum TCP connection load balance
+        listen 22003;
+        proxy_pass quorumRPC;
+    }
+}

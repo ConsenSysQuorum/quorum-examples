@@ -16,7 +16,7 @@
         {
             "app":"Q2T",
             "enabled": true,
-            "serverAddress":"unix:/Users/nicolae/Develop/new-quorum-examples/quorum-examples/examples/7nodes/qdata/c4/tm2.ipc",
+            "serverAddress":"http://localhost:29184",
             "communicationType" : "REST"
         },
         {
