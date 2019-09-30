@@ -1,0 +1,7 @@
+{
+  "main": "perf-send.js",
+  "dependencies": {
+    "quorum-js": "^0.3.2",
+    "web3": "2.0.0-alpha.1"
+  }
+}
