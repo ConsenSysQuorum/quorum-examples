@@ -105,7 +105,7 @@ fi
 echo "[*] Starting ${numNodes} Ethereum nodes with ChainID and NetworkId of $NETWORK_ID"
 QUORUM_GETH_ARGS=${QUORUM_GETH_ARGS:-}
 set -v
-ARGS="--nodiscover --istanbul.blockperiod 5 --networkid $NETWORK_ID --syncmode full --mine --minerthreads 1 --rpc --rpccorsdomain=* --rpcvhosts=* --rpcaddr 0.0.0.0 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,istanbul,quorumPermission --unlock 0 --password passwords.txt $QUORUM_GETH_ARGS"
+ARGS="--nodiscover --istanbul.blockperiod 5 --networkid $NETWORK_ID --syncmode full --mine --minerthreads 1 --rpc --rpccorsdomain=* --rpcvhosts=* --rpcaddr 0.0.0.0 --rpcapi quorumExtension,admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,istanbul,quorumPermission --unlock 0 --password passwords.txt $QUORUM_GETH_ARGS"
 
 basePort=21000
 baseRpcPort=22000
@@ -118,7 +118,7 @@ do
         permissioned="--permissioned"
     fi
 
-    PRIVATE_CONFIG=qdata/c${i}/tm.ipc nohup geth --datadir qdata/dd${i} ${ARGS} ${permissioned} --rpcport ${rpcPort} --port ${port} 2>>qdata/logs/${i}.log &
+    PRIVATE_CONFIG=qdata/c${i}/tm.ipc nohup geth --datadir qdata/dd${i} ${ARGS} ${permissioned} --contractextension.server qdata/c${i}/thirdparty.ipc --rpcport ${rpcPort} --port ${port} 2>>qdata/logs/${i}.log &
 done
 
 set +v

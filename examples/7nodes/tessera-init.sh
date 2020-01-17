@@ -60,6 +60,12 @@ cat <<EOF > ${DDIR}/tessera-config-09-${i}.json
             "communicationType" : "REST"
         },
         {
+            "app":"ThirdParty",
+            "enabled": true,
+            "serverAddress": "http://localhost:908${i}",
+            "communicationType" : "REST"
+        },
+        {
             "app":"Q2T",
             "enabled": true,
             "serverAddress":"unix:${DDIR}/tm.ipc",
