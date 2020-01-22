@@ -41,7 +41,7 @@ echo "[*] Initialising Tessera configuration for $numNodes node(s)"
 encryptorType=${ENCRYPTOR_TYPE:-NACL}
 encryptorProps=""
 
-if [ "$encryptorType" == "EC" ]; then
+if [[ $encryptorType == EC ]]; then
     defaultTesseraJarExpr="/home/vagrant/tessera/tessera.jar"
     set +e
     defaultTesseraJar=`find ${defaultTesseraJarExpr} 2>/dev/null`
@@ -63,6 +63,9 @@ if [ "$encryptorType" == "EC" ]; then
     encryptorProps=$(printf "\"symmetricCipher\":\"%s\",\n            \"ellipticCurve\":\"%s\",\n            \"nonceLength\":\"%s\",\n            \"sharedKeyLength\":\"%s\"" \
      "${ENCRYPTOR_EC_SYMMETRIC_CIPHER:-AES/GCM/NoPadding}" "${ENCRYPTOR_EC_ELLIPTIC_CURVE:-secp256r1}" "${ENCRYPTOR_EC_NONCE_LENGTH:-24}" "${ENCRYPTOR_EC_SHARED_KEY_LENGTH:-32}" )
 fi
+
+keySigning=${KEY_SIGNING:-OFF}
+generateIdentityKeys=${GEN_IDENTITY_KEYS:-OFF}
 
 # Dynamically create the config for peers, depending on numNodes
 getPeerIPs	# get list of IP addresses for peers
@@ -104,9 +107,45 @@ do
     serverPortThirdParty=$((9080 + ${i}))
     serverPortEnclave=$((9180 + ${i}))
 
+    #generate tessera keys
+    if [[ $encryptorType == EC ]]; then
+        cat <<EOF > ${DDIR}/keygenconfig.json
+{
+    "encryptor":{
+        "type":"${encryptorType}",
+        "properties":{
+            ${encryptorProps}
+        }
+    }
+}
+EOF
+
+        cd $DDIR
+        set +e
+        java -jar $tesseraJar -configfile keygenconfig.json -keygen -filename tm < /dev/null
+        set -e
+        rm keygenconfig.json
+        cd $currentDir
+    fi
+
+    #generate identity keys
+    if [[ $generateIdentityKeys == ON ]]; then
+        ./createIdentityKey.sh ${DDIR} identityKey
+    fi
+
+    keyIdentitiesConfig=""
+    #sign the transport key using the identity keys
+    if [[ $keySigning == ON ]]; then
+        ./generateKeyIdentityConfig.sh ${DDIR} tm identityKey
+        keyIdentitiesConfig=$(cat ${DDIR}/keyIdentities.json)
+    fi
+
     #change tls to "strict" to enable it (don't forget to also change http -> https)
 cat <<EOF > ${DDIR}/tessera-config-09-${i}.json
 {
+    "features": {
+        "enableRemoteKeyValidation": true
+    },
     "encryptor":{
         "type":"${encryptorType}",
         "properties":{
@@ -168,7 +207,8 @@ cat <<EOF > ${DDIR}/tessera-config-09-${i}.json
             }
         ]
     },
-    "alwaysSendTo": []
+    "alwaysSendTo": [],
+    "keyIdentities": $keyIdentitiesConfig
 }
 EOF
 
@@ -247,31 +287,12 @@ cat <<EOF > ${DDIR}/enclave-09-${i}.json
 }
 EOF
 
-    #generate tessera keys
-    if [ "$encryptorType" == "EC" ]; then
-        cat <<EOF > ${DDIR}/keygenconfig.json
-{
-    "encryptor":{
-        "type":"${encryptorType}",
-        "properties":{
-            ${encryptorProps}
-        }
-    }
-}
-EOF
 
-        cd $DDIR
-        set +e
-        java -jar $tesseraJar -configfile keygenconfig.json -keygen -filename tm < /dev/null
-        set -e
-        rm keygenconfig.json
-        cd $currentDir
-    fi
 
 done
 
 #create a copy of private-contract.js where the public key of the tessera node (privateFor) is replaced with the newly generated key of the last node (numNodes)
-if [ "$encryptorType" == "EC" ]; then
+if [[ $encryptorType == EC ]]; then
     oldKey=$(cat keys/tm7.pub)
     newKey=$(cat qdata/c${numNodes}/tm.pub)
     #replace all / with \/ in the newKey (otherwise sed complains about it)
