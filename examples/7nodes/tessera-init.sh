@@ -133,7 +133,7 @@ EOF
         ./createIdentityKey.sh ${DDIR} identityKey
     fi
 
-    keyIdentitiesConfig=""
+    keyIdentitiesConfig="[]"
     #sign the transport key using the identity keys
     if [[ $keySigning == ON ]]; then
         ./generateKeyIdentityConfig.sh ${DDIR} tm identityKey
