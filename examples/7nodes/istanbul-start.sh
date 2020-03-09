@@ -117,10 +117,10 @@ fi
 echo "[*] Starting ${numNodes} Ethereum nodes with ChainID and NetworkId of $NETWORK_ID"
 QUORUM_GETH_ARGS=${QUORUM_GETH_ARGS:-}
 set -v
-ARGS="--nodiscover --verbosity ${verbosity} --istanbul.blockperiod ${blockPeriod} --networkid $NETWORK_ID --syncmode full --mine --minerthreads 1 --rpc --rpccorsdomain=* --rpcvhosts=* --rpcaddr 0.0.0.0 --rpcapi admin,eth,debug,miner,net,shh,txpool,personal,web3,quorum,istanbul,quorumPermission --unlock 0 --password passwords.txt $QUORUM_GETH_ARGS"
+ARGS="--nodiscover --allow-insecure-unlock --verbosity ${verbosity} --istanbul.blockperiod ${blockPeriod} --networkid $NETWORK_ID --syncmode full --mine --minerthreads 1 --rpc --rpccorsdomain=* --rpcvhosts=* --rpcaddr 0.0.0.0 --rpcapi admin,eth,debug,miner,net,shh,txpool,personal,web3,quorum,istanbul,quorumPermission --unlock 0 --password passwords.txt $QUORUM_GETH_ARGS"
 
 basePort=21000
-baseRpcPort=22000
+baseRpcPort=32000
 for i in `seq 1 ${numNodes}`
 do
     port=$(($basePort + ${i} - 1))
