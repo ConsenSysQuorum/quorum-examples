@@ -117,7 +117,8 @@ fi
 echo "[*] Starting $numNodes Ethereum nodes with ChainID and NetworkId of $NETWORK_ID"
 QUORUM_GETH_ARGS=${QUORUM_GETH_ARGS:-}
 set -v
-ARGS="--nodiscover --allow-insecure-unlock --verbosity ${verbosity} --networkid $NETWORK_ID --raft --raftblocktime ${blockTime} --rpc --rpccorsdomain=* --rpcvhosts=* --rpcaddr 0.0.0.0 --rpcapi admin,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft,quorumPermission --emitcheckpoints --unlock 0 --password passwords.txt $QUORUM_GETH_ARGS"
+
+ARGS="--nodiscover --allow-insecure-unlock --verbosity ${verbosity} --networkid $NETWORK_ID --raft --raftblocktime ${blockTime} --rpc --rpccorsdomain=* --rpcvhosts=* --rpcaddr 0.0.0.0 --rpcapi admin,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft,quorumPermission,quorumExtension --emitcheckpoints --unlock 0 --password passwords.txt $QUORUM_GETH_ARGS"
 
 basePort=21000
 baseRpcPort=32000
@@ -134,7 +135,7 @@ do
         permissioned="--permissioned"
     fi
 
-    PRIVATE_CONFIG=qdata/c${i}/tm.ipc nohup geth --datadir qdata/dd${i} ${ARGS} ${permissioned} --raftport ${raftPort} --rpcport ${rpcPort} --port ${port} 2>>qdata/logs/${i}.log &
+    PRIVATE_CONFIG=qdata/c${i}/tm.ipc nohup geth --datadir qdata/dd${i} ${ARGS} ${permissioned} --contractextension.server qdata/c${i}/tm1.ipc --raftport ${raftPort} --rpcport ${rpcPort} --port ${port} 2>>qdata/logs/${i}.log &
 done
 
 set +v

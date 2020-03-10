@@ -125,10 +125,12 @@ cat <<EOF > ${DDIR}/tessera-config-09-${i}.json
             "app":"ThirdParty",
             "enabled": true,
             "serverAddress": "http://localhost:${serverPortThirdParty}",
-            "cors" : {
-                "allowedMethods" : ["GET", "OPTIONS"],
-                "allowedOrigins" : ["*"]
-            },
+            "communicationType" : "REST"
+        },
+        {
+            "app":"ThirdParty",
+            "enabled": true,
+            "serverAddress": "unix:${DDIR}/tm1.ipc",
             "communicationType" : "REST"
         },
         {
