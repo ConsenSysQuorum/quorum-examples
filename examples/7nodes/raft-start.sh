@@ -121,7 +121,7 @@ set -v
 ARGS="--nodiscover --allow-insecure-unlock --verbosity ${verbosity} --networkid $NETWORK_ID --raft --raftblocktime ${blockTime} --rpc --rpccorsdomain=* --rpcvhosts=* --rpcaddr 0.0.0.0 --rpcapi admin,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft,quorumPermission,quorumExtension --emitcheckpoints --unlock 0 --password passwords.txt $QUORUM_GETH_ARGS"
 
 basePort=21000
-baseRpcPort=32000
+baseRpcPort=22000
 baseRaftPort=50401
 for i in `seq 1 ${numNodes}`
 do
