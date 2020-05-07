@@ -125,7 +125,7 @@ Attach to node1 geth console:
 ```shell script
 $ geth attach qdata/dd1/geth.ipc 
 ```
-Deploy a party protection simple storage contract between node1, node3 and node4:
+Deploy a PSV simple storage contract between node1, node3 and node4:
 ```shell script
 loadScript("samples/privacy-enhancements/private-contract-PSV.js")
 Contract transaction send: TransactionHash: 0x7623351e3b7eea4ca5c1437cad8b33c869e5cc64d4d3c300a8b6c74bbfdc5c59 waiting to be mined...
