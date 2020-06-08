@@ -1,7 +1,7 @@
 # Privacy Enhancements Examples
 
 ## Running
-Please ensure that your sample network has privacy enhancements enabled. 
+Please ensure that your sample network has privacy enhancements enabled (the config section in the genesis.json has the `"privacyEnhancementsBlock": 0` element). 
 
 ###Party Protection
 Replace the contract addresses/transaction hashes below with the addresses/hashes resulting from deploying the relevant contract/sending the relevant transaction. 
