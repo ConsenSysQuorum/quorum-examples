@@ -35,6 +35,7 @@
           "size" : 32
         }
       ],
+      "privacyEnhancementsBlock": 0,
       "istanbul": {
         "epoch": 30000,
         "policy": 0,
