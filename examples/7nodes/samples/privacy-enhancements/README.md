@@ -45,18 +45,19 @@ $ geth attach qdata/dd2/geth.ipc
 Verify the privacy metadata for the newly created contract does not exist on node2:
 ```shell script
 > eth.getContractPrivacyMetadata("0x426886107ed52c22b4735adc77c8f1e0bf08746d");
-Error: leveldb: not found
+Error: The provided contract does not have privacy metadata: 426886107ed52c22b4735adc77c8f1e0bf08746d
     at web3.js:3143:20
     at web3.js:6347:15
     at web3.js:5081:36
     at <anonymous>:1:1
+
 ```
 Try to send a party protection transaction from node2 that attempts to alter the contract state:
 ```shell script
 > var abi = [{"constant":true,"inputs":[],"name":"storedData","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"x","type":"uint256"}],"name":"set","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"get","outputs":[{"name":"retVal","type":"uint256"}],"payable":false,"type":"function"},{"inputs":[{"name":"initVal","type":"uint256"}],"type":"constructor"}];
 > var private = eth.contract(abi).at("0x426886107ed52c22b4735adc77c8f1e0bf08746d")
 > private.set(4,{from:eth.accounts[0],privateFor:["oNspPPgszVUFw0qmGFfWwh1uxVUXgvBxleXORHj07g8=", "1iTZde/ndBHvzhcl7V68x44Vx7pl8nwx9LqnM/AfJUg="], privacyFlag:1});
-Error: PrivacyMetadata unable to be found: leveldb: not found
+Error: contract not found. cannot transact
     at web3.js:3143:20
     at web3.js:6347:15
     at web3.js:5081:36
@@ -160,7 +161,7 @@ $ geth attach qdata/dd2/geth.ipc
 Verify the privacy metadata for the newly created contract does not exist on node2:
 ```shell script
 > eth.getContractPrivacyMetadata("0x4f2748cdb215191ec590a8dae5f17765eab48b19")
-Error: leveldb: not found
+Error: The provided contract does not have privacy metadata: 4f2748cdb215191ec590a8dae5f17765eab48b19
     at web3.js:3143:20
     at web3.js:6347:15
     at web3.js:5081:36
@@ -171,7 +172,7 @@ Try to send a PSV transaction from node2 that attempts to alter the contract sta
 > var abi = [{"constant":true,"inputs":[],"name":"storedData","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"x","type":"uint256"}],"name":"set","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"get","outputs":[{"name":"retVal","type":"uint256"}],"payable":false,"type":"function"},{"inputs":[{"name":"initVal","type":"uint256"}],"type":"constructor"}];
 > var private = eth.contract(abi).at("0x4f2748cdb215191ec590a8dae5f17765eab48b19")
 > private.set(4,{from:eth.accounts[0],privateFor:["oNspPPgszVUFw0qmGFfWwh1uxVUXgvBxleXORHj07g8=", "1iTZde/ndBHvzhcl7V68x44Vx7pl8nwx9LqnM/AfJUg="], privacyFlag:3});
-Error: PrivacyMetadata unable to be found: leveldb: not found
+Error: contract not found. cannot transact
     at web3.js:3143:20
     at web3.js:6347:15
     at web3.js:5081:36
